@@ -13,6 +13,9 @@ class config
     //     "note_url": ["yourUrl"]}' https://api.github.com/authorizations
     const access_token = "...";
     
+    // Client secret (one secret per test client)
+    public static $client_secret = array( "client" => "..." );
+
     // Name of our database to store tasks and status
     const dbName = "db/states.db";
     

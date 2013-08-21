@@ -22,6 +22,15 @@ require_once('connectGitHub.php');
 $isGitHub = ipRange::test( $_SERVER['REMOTE_ADDR'] );
 $db = new dbHandler( $mvc_objects );
 
+$client=array( 'isClient' => FALSE, 'name' => "" );
+foreach( config::$client_secret as $key => $value )
+{
+    if( @$_POST['client'] == $value )
+    {
+        $client['isClient'] = TRUE;
+        $client['name'] = $key;
+    }
+}
 
 /** Parse Request *************************************************************
  */
@@ -38,6 +47,12 @@ if( $isGitHub )
     $mvcEvent = new mvc_event();
     $mvcEvent->add( $db, $payload );
 }
+/** Test client connected */
+elseif( $client['isClient'] )
+{
+
+}
+/** Unauth visitor */
 else
 {
     echo "Hello you!<br />";
