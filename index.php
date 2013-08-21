@@ -1,45 +1,54 @@
 <?php
-echo "Hey!<br>";
-///echo phpversion();
-echo "<br>";
-//echo $_SERVER['REMOTE_ADDR'];
-echo "<br>";
-//print_r( SQLite3::version() );
-echo "<br>";
 
-//$sql = new SQLite3("test.db");
-//if (!$sql) die ($error);
-
-//$stm = "CREATE TABLE Friends(id integer PRIMARY KEY," .
-//       "name text NOT NULL, gender text CHECK(gender IN ('M', 'F')))";
-//$sql->exec($stm);
-
-//echo "Database Friends created successfully";
-
+// To do:
+// - write test client binding / api and sceduler
+// - allow multiple tests / event
 // - Round Robin
 //     http://www.mail-archive.com/sqlite-users@sqlite.org/msg60752.html
 // - put db in a password protected sub dir
-// - limit access to this file for github IP range
-//     The Public IP addresses for these hooks are: 204.232.175.64/27, 192.30.252.0/22.
-//     http://php.net/manual/en/function.ip2long.php
-//     http://php.net/manual/en/function.ip2long.php#92544
-// - parse json 
-//     http://php.net/manual/de/function.json-decode.php
-// - github hooks: payload format
-//     https://help.github.com/articles/post-receive-hooks
+
+/** Includes ******************************************************************
+ */
+require_once('config.php');
+require_once('ghStatus.php');
+require_once('ipRange.php');
+require_once('dbHandler.php');
+require_once('mvc_event.php');
+require_once('connectGitHub.php');
 
 
-//$results = $db->query("SELECT s.spielid, t.trackdate, t.id
-//  FROM tableTracks AS t
-//   JOIN tableSpieler AS s
-//   WHERE t.trackspieler = s.id
-//   ORDER BY t.id");
-//while ($row = $results->fetchArray()) {
-//   echo $r['trackdate'];
-//   echo $r['spielid'];
-//   ...
-//}
+/** Helpers *******************************************************************
+ */
+$isGitHub = ipRange::test( $_SERVER['REMOTE_ADDR'] );
+$db = new dbHandler( $mvc_objects );
 
-//$sql->close();
+
+/** Parse Request *************************************************************
+ */
+if( $isGitHub )
+{
+    echo "Hello GitHub!<br />";
+    $ghParser = new connectGitHub( );
+    
+    // validate and prepare payload
+    $payload = $_POST['payload'];
+    if( config::maxlen > 0 )
+        $payload = substr( $payload, 0, config::maxlen );
+    
+    $mvcEvent = new mvc_event();
+    $mvcEvent->add( $db, $payload );
+}
+else
+{
+    echo "Hello you!<br />";
+    $mvcEvent = new mvc_event();
+    $mvcEvent->getList( $db );
+    
+    $ghParser = new connectGitHub( );
+    //$ghParser->setStatus( $db, 15, ghStatus::success );
+    //$mvcEvent->add( $db, "test123" );
+}
+
+exit( 0 );
 ?>
 
