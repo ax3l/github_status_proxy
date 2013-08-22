@@ -18,7 +18,7 @@
  *  along with github_status_proxy. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/** A MVC like object for database tables
+/** A MVC like (not-really) object for database tables
  */
 class mvc
 {

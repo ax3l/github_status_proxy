@@ -36,33 +36,44 @@ class config
     //     '{"scopes": ["repo:status"], "note": ["GitHub Proxy"],
     //     "note_url": ["yourUrl"]}' https://api.github.com/authorizations
     const access_token = "...";
-    
+
     // Client secret (one secret per test client)
+    //   clients must auth theirselves with a POST variable "client" using the
+    //   secret its value
     public static $client_secret = array( "client" => "..." );
+
+    // Timout after which the event is scheduled again as "needs to be tested"
+    // in hours
+    const clientTimeout = 2.0;
 
     // Name of our database to store tasks and status
     const dbName = "db/states.db";
-    
+
+    // Concurency busy timeout of the database
+    // in milliseconds
+    const dbTimeout = 3000;
+
     // Allowed IP Range for GitHub POST origins
     public static $github_iprange = array(
      array( 'ip' => "204.232.175.64", 'mask' => "27"),
      array( 'ip' => "192.30.252.0",   'mask' => "22") );
-     
+
     // debug output - DISABLE for production runs!
+    // note: this will probably confuse your connected test clients
     const debug = TRUE;
-    
+
     // maximum number of commits/pull requests to store
     // 0 means: no limit
     /// @todo maxentries not implemented yet
     const maxentries = 0;
-    
+
     // maximum length of the payload in chars
     // 0 means: no limit
     const maxlen = 100000;
-    
+
     // url of this proxy
     const url = "...";
-    
+
     // github api base url
     const api = "https://api.github.com";
 

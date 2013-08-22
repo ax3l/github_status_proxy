@@ -38,6 +38,7 @@ class mvc_event extends mvc
     protected $columns = array(
       array( 'name' => "id", 'type' => "INTEGER", 'prop' => "PRIMARY KEY AUTOINCREMENT", 'format' => "%d", 'default' => TRUE),
       array( 'name' => "etype", 'type' => "TEXT", 'prop' => "NOT NULL",     'format' => "%s", 'default' => FALSE),
+      array( 'name' => "estatus", 'type' => "TEXT", 'prop' => "NOT NULL",   'format' => "%s", 'default' => FALSE),
       array( 'name' => "sha", 'type' => "CHAR(40)", 'prop' => "NOT NULL",   'format' => "%s", 'default' => FALSE),
       array( 'name' => "sha_p", 'type' => "CHAR(40)", 'prop' => "NOT NULL", 'format' => "%s", 'default' => FALSE),
       array( 'name' => "owner", 'type' => "TEXT", 'prop' => "NOT NULL",     'format' => "%s", 'default' => FALSE),
@@ -48,11 +49,11 @@ class mvc_event extends mvc
       array( 'name' => "url_p", 'type' => "TEXT", 'prop' => "NOT NULL",     'format' => "%s", 'default' => FALSE),
       array( 'name' => "git", 'type' => "TEXT", 'prop' => "NOT NULL",       'format' => "%s", 'default' => FALSE),
       array( 'name' => "git_p", 'type' => "TEXT", 'prop' => "NOT NULL",     'format' => "%s", 'default' => FALSE),
-      array( 'name' => "received", 'type' => "DATETIME", 'prop' => "DEFAULT CURRENT_TIMESTAMP", 'format' => "YYYY-MM-DD HH:MM:SS", 'default' => TRUE),
+      array( 'name' => "lastup", 'type' => "DATETIME", 'prop' => "DEFAULT CURRENT_TIMESTAMP", 'format' => "YYYY-MM-DD HH:MM:SS", 'default' => TRUE),
       array( 'name' => "payload", 'type' => "TEXT", 'prop' => "NOT NULL",  'format' => "%s", 'default' => FALSE)
     );
 
-    function add( &$db, $payload )
+    function add( &$db, &$ghParser, $payload )
     {
         if( config::maxlen > 0 )
             $payload = substr( $payload, 0, config::maxlen );
@@ -62,14 +63,14 @@ class mvc_event extends mvc
         //   http://developer.github.com/v3/activity/events/types/#pullrequestevent
         $dec = json_decode( $payload );
         
-        $eventType = ghStatus::commit;
+        $eventType = ghType::commit;
         if( isset( $dec->pull_request) )
-            $eventType = ghStatus::pull;
+            $eventType = ghType::pull;
 
         $url = ""; $git = ""; $own = ""; $rep = ""; $sha = "";
         $url_p = ""; $git_p = ""; $own_p = ""; $rep_p = ""; $sha_p = "";
 
-        if( $eventType == ghStatus::commit )
+        if( $eventType == ghType::commit )
         {
             $url = $dec->repository->url;
             $own = $dec->repository->owner->name;
@@ -83,7 +84,7 @@ class mvc_event extends mvc
             $rep_p = $rep;
             $sha_p = $sha;
         }
-        elseif( $eventType == ghStatus::pull )
+        elseif( $eventType == ghType::pull )
         {
             // http://developer.github.com/v3/activity/events/types/#pullrequestevent
             //   opened, closed, synchronize or reopened
@@ -114,6 +115,7 @@ class mvc_event extends mvc
 
         $query = sprintf( $mvcEvent->getInsertSQL(),
                           SQLite3::escapeString( $eventType ),
+                          SQLite3::escapeString( eventStatus::received ),
                           SQLite3::escapeString( $sha ),
                           SQLite3::escapeString( $sha_p ),
                           SQLite3::escapeString( $own ),
@@ -126,9 +128,24 @@ class mvc_event extends mvc
                           SQLite3::escapeString( $git_p ),
                           SQLite3::escapeString( $payload )
                         );
-        $db->exec( $query );
+        $newID = $db->insert( $query );
 
-        /// @todo trigger github pending status
+        // trigger github pending status
+        $ghParser->setStatus( $db, $newID, ghStatus::pending,
+                              "received by status proxy" );
+    }
+
+    function setStatus( &$db, $id, $estatus )
+    {
+        $upQuery = sprintf( "UPDATE `%s`" .
+                            " SET `estatus`='%s'," .
+                            "     `lastup`=datetime('now')" .
+                            " WHERE `id`='%d';",
+                            SQLite3::escapeString( $this->name ),
+                            SQLite3::escapeString( eventStatus::scheduled ),
+                            SQLite3::escapeString( $id )
+                          );
+        $db->exec( $upQuery );
     }
     
     function getById( &$db, $id )
@@ -141,38 +158,96 @@ class mvc_event extends mvc
                         );
         
         $result = $db->query( $query );
-        return $results->fetchArray();
+
+        if( ! $result )
+            return NULL;
+
+        return $result->fetchArray();
+    }
+
+    /** get new work and mark as eventStatus::scheduled
+     *
+     *  start with oldest eventStatus::received events
+     */
+    function getNext( &$db )
+    {
+        $results = $db->query("SELECT * " .
+                              " FROM " . $this->name .
+                              " WHERE `estatus`='" . eventStatus::received . "'" .
+                              " ORDER BY `lastup` ASC" .
+                              " LIMIT 1");
+        while( $row = $results->fetchArray() )
+        {
+            $thisEvent = array(
+                'id' => $row['id'],
+                'lastup' => $row['lastup'],
+                'etype' => $row['etype'],
+                'base' => array(
+                    'owner' => $row['owner'],
+                    'repo' => $row['repo'],
+                    'git' => $row['git'],
+                    'sha' => $row['sha'],
+                    'url' => $row['url']
+                )
+            );
+            if( $row['etype'] == ghType::pull )
+            {
+                array_push($thisEvent, array(
+                    'head' => array(
+                        'owner' => $row['owner_p'],
+                        'repo' => $row['repo_p'],
+                        'git' => $row['git_p'],
+                        'sha' => $row['sha_p'],
+                        'url' => $row['url_p']
+                        )
+                    )
+                );
+            }
+
+            $json = json_encode( $thisEvent );
+            //echo $json;
+            print_r( $thisEvent );
+
+            // mark as scheduled in `event` table
+            $this->setStatus( $db, $thisEvent['id'], eventStatus::scheduled );
+
+            /// @todo insert to `test` table
+            /// ...
+        }
     }
     
     function getList( &$db )
     {
         $results = $db->query("SELECT * " .
-                              " FROM " . $this->name .
+                              " FROM `" . $this->name . "`" .
                               " WHERE 1 " .
                               " ORDER BY id");
-        echo "Available events:<br />";
+        echo "Available events:\n";
         while( $row = $results->fetchArray() )
         {
-            echo "Meta: <br />";
-            echo $row['received']  . "<br /><br />";
-            echo $row['etype']  . "<br /><br />";
-            //echo $row['payload']  . "<br />";
+            echo "Meta:\n";
+            echo $row['lastup']  . "\n";
+            echo $row['etype']   . "\n";
+            echo $row['estatus'] . "\n";
+            //echo $row['payload']  . "\n";
 
-            echo "Base: <br />";
-            echo $row['owner'] . "<br />";
-            echo $row['repo']  . "<br />";
-            echo $row['sha']   . "<br />";
-            echo $row['url']   . "<br />";
+            echo "Base:\n";
+            echo $row['owner'] . "\n";
+            echo $row['repo']  . "\n";
+            echo $row['git']   . "\n";
+            echo $row['sha']   . "\n";
+            echo $row['url']   . "\n";
 
-            if( $row['etype'] == ghStatus::pull )
+            if( $row['etype'] == ghType::pull )
             {
-                echo "Head: <br />";
-                echo $row['owner_p'] . "<br />";
-                echo $row['repo_p']  . "<br />";
-                echo $row['sha_p']   . "<br />";
-                echo $row['url_p']   . "<br />";
+                echo "Head:\n";
+                echo $row['owner_p'] . "\n";
+                echo $row['repo_p']  . "\n";
+                echo $row['git_p']   . "\n";
+                echo $row['sha_p']   . "\n";
+                echo $row['url_p']   . "\n";
             }
-            echo "<br />";
+            echo "\n";
         }
     }
 

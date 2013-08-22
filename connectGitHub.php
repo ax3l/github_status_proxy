@@ -46,20 +46,27 @@ class connectGitHub
      *     auth: (header) "Authorization: token <...>"
      *     scope: repo:status
      */
-    function setStatus( &$db, $dbId, $status )
+    function setStatus( &$db, $dbId, $status, $postDesc = NULL )
     {
         /** get event */
         $mvcEvent = new mvc_event();
         $evEntry = $mvcEvent->getById( $db, $dbId );
         
+        /** description */
+        $description = "Build status - " . $status;
+        if( isset( $postDesc ) )
+            $description .= " - " . $postDesc;
+
+        /** JSON params */
         $url = config::api . "/repos/" .
                $evEntry['owner'] . "/" . $evEntry['repo'] .
                "/statuses/" .       
                $evEntry['sha'];
         $data = '{"state": "' . $status . '", ' .
                 ' "target_url": "' . config::url . '?status=' . $evEntry['sha'] . '", ' .
-                ' "description": "Build status - ' . $status . '!"}';
+                ' "description": "' . $description . '"}';
         
+        /** send to GitHub */
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -86,8 +93,6 @@ class connectGitHub
             echo $response;
         }
         curl_close($ch);
-        
-        /** @todo set status in database */
     }
 
 } // class connectGitHub

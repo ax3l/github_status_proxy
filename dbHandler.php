@@ -37,11 +37,14 @@ class dbHandler
         $this->sql = new SQLite3( $this->dbName );
         if( ! $this->sql ) die( "Error opening SQLite database..." );
 
+        // set busy timeout in milliseconds
+        $this->sql->busyTimeout( config::dbTimeout );
+
         // check for tables
         foreach( $mvc_objects as $table )
         {
             if( config::debug )
-                echo "Looking for table \"" . $table->getName() . "\"<br />";
+                echo "Looking for table \"" . $table->getName() . "\"\n";
             
             $table_ex = "SELECT name FROM sqlite_master WHERE type='table' AND name='" . $table->getName() . "'";
             $result = $this->sql->query( $table_ex );
@@ -53,7 +56,7 @@ class dbHandler
             if( $result->fetchArray() == NULL )
             {
                 if( config::debug )
-                    echo "create table \"" . $table->getName() . "\"<br />";
+                    echo "create table \"" . $table->getName() . "\"\n";
                 
                 //$this->sql->exec( "PRAGMA foreign_keys = ON;" );
 
@@ -76,7 +79,7 @@ class dbHandler
             else
             {
                 if( config::debug )
-                    echo "table \"" . $table->getName() . "\" found<br />";
+                    echo "table \"" . $table->getName() . "\" found\n";
             }
         }
     }
@@ -84,6 +87,7 @@ class dbHandler
     function __destruct()
     {
         $this->sql->close();
+        unset($this->sql);
     }
     
     function exec( $cmd )
@@ -91,6 +95,12 @@ class dbHandler
         return $this->sql->exec( $cmd );
     }
     
+    function insert( $cmd )
+    {
+        $this->exec( $cmd );
+        return $this->sql->lastInsertRowID();
+    }
+
     function query( $query )
     {
         return $this->sql->query( $query );

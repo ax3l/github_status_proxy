@@ -37,13 +37,14 @@ require_once('connectGitHub.php');
 
 /** Helpers *******************************************************************
  */
+@header('Content-type: text/plain');
 $isGitHub = ipRange::test( $_SERVER['REMOTE_ADDR'] );
 $db = new dbHandler( $mvc_objects );
 
 $client=array( 'isClient' => FALSE, 'name' => "" );
 foreach( config::$client_secret as $key => $value )
 {
-    if( @$_POST['client'] == $value )
+    if( @$_POST['client'] == $value || @$_GET['client'] == $value )
     {
         $client['isClient'] = TRUE;
         $client['name'] = $key;
@@ -54,7 +55,9 @@ foreach( config::$client_secret as $key => $value )
  */
 if( $isGitHub )
 {
-    echo "Hello GitHub!<br />";
+    if( config::debug )
+        echo "Hello GitHub!\n";
+
     $ghParser = new connectGitHub( );
     
     // validate and prepare payload
@@ -63,24 +66,64 @@ if( $isGitHub )
         $payload = substr( $payload, 0, config::maxlen );
     
     $mvcEvent = new mvc_event();
-    $mvcEvent->add( $db, $payload );
+    $mvcEvent->add( $db, $ghParser, $payload );
 }
 /** Test client connected */
 elseif( $client['isClient'] )
 {
+    if( config::debug )
+        echo "Hello " . $client['name'] . "\n";
 
+    // Receive request payload
+    if( isset( $_POST['payload'] ) )
+        $payload = $_POST['payload'];
+    elseif( isset( $_GET['payload'] ) )
+        $payload = $_GET['payload'];
+    else
+    {
+        if( config::debug )
+            echo "No payload specified\n";
+    }
+
+    // get new work or report a finished test?
+    if( config::maxlen > 0 )
+        $payload = substr( $payload, 0, config::maxlen );
+
+    $dec = json_decode( $payload );
+    if( $dec->action == clientReport::request )
+    {
+        if( config::debug )
+            echo "request new work\n";
+
+        $mvcEvent = new mvc_event();
+        $mvcEvent->getNext( $db );
+    }
+    elseif( $dec->action == clientReport::report )
+    {
+        if( config::debug )
+            echo "report test results<br />";
+
+        // ...
+    }
+    else
+    {
+        if( config::debug )
+            echo "No known action found (in payload)\n";
+    }
 }
 /** Unauth visitor */
 else
 {
-    echo "Hello you!<br />";
+    if( config::debug )
+        echo "Hello you!\n";
+
     $mvcEvent = new mvc_event();
     $mvcEvent->getList( $db );
     
     $ghParser = new connectGitHub( );
     //$ghParser->setStatus( $db, 15, ghStatus::success );
     /*
-    $mvcEvent->add( $db, '{ "after" : "237a99b", "repository" : { ' .
+    $mvcEvent->add( $db, $ghParser, '{ "after" : "237a99b", "repository" : { ' .
                                 '"owner" : { "email" : null, ' .
                                             '"name" : ":owner" }, ' .
                                 '"url" : "https://github.com/:owner/:repo", "name" : ":repo" }' .
@@ -88,6 +131,7 @@ else
     */
 }
 
+unset( $db );
 exit( 0 );
 ?>
 

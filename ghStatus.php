@@ -40,4 +40,24 @@ class ghType
 
 } // class ghType
 
+class clientReport
+{
+    /** request new work */
+    const request = 'request';
+    /** report finished test results */
+    const report  = 'report';
+
+} // class clientReport
+
+class eventStatus
+{
+    /** received from github */
+    const received = 'received';
+    /** scheduled to test client */
+    const scheduled  = 'scheduled';
+    /** analysed by test client */
+    const analysed  = 'analysed';
+
+} // class clientReport
+
 ?>
