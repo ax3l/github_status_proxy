@@ -149,7 +149,7 @@ class mvc_event extends mvc
                             "     `lastup`=datetime('now')" .
                             " WHERE `id`='%d';",
                             SQLite3::escapeString( $this->name ),
-                            SQLite3::escapeString( eventStatus::scheduled ),
+                            SQLite3::escapeString( $estatus ),
                             SQLite3::escapeString( $id )
                           );
         $db->exec( $upQuery );

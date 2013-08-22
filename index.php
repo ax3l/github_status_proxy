@@ -19,11 +19,12 @@
  */
 
 // To do:
-// - write test client binding / api and sceduler
-// - allow multiple tests / event
+// - create entries for each test client in `test` table as soon as an event
+//   is created OR define "no entry" = "has to be tested"
 // - Round Robin
 //     http://www.mail-archive.com/sqlite-users@sqlite.org/msg60752.html
 // - put db in a password protected sub dir
+// - format unauth client status request
 
 /** Includes ******************************************************************
  */
@@ -96,6 +97,7 @@ elseif( $client['isClient'] )
         if( config::debug )
             echo "request new work\n";
 
+        $ghParser = new connectGitHub( );
         $mvcEvent = new mvc_event();
         $mvcEvent->getNext( $db, $ghParser );
     }

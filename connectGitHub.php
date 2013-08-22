@@ -84,13 +84,13 @@ class connectGitHub
         if( config::debug )
         {
             curl_error($ch);
-            echo "<br />";
+            echo "\n";
             curl_getinfo($ch, CURLINFO_SSL_VERIFYRESULT);
-            echo "<br />";
+            echo "\n";
             curl_getinfo($ch, CURLINFO_HTTP_CODE);
             // expected response: "Status: 201 Created"
-            echo "<br />";
-            echo $response;
+            echo "\n";
+            //echo $response;
         }
         curl_close($ch);
     }
