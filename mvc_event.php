@@ -204,7 +204,7 @@ class mvc_event extends mvc
                 );
             }
 
-            $json = json_encode( $thisEvent );
+            //$json = json_encode( $thisEvent );
             //echo $json;
             print_r( $thisEvent );
 
@@ -225,28 +225,36 @@ class mvc_event extends mvc
         echo "Available events:\n";
         while( $row = $results->fetchArray() )
         {
-            echo "Meta:\n";
-            echo $row['lastup']  . "\n";
-            echo $row['etype']   . "\n";
-            echo $row['estatus'] . "\n";
-            //echo $row['payload']  . "\n";
-
-            echo "Base:\n";
-            echo $row['owner'] . "\n";
-            echo $row['repo']  . "\n";
-            echo $row['git']   . "\n";
-            echo $row['sha']   . "\n";
-            echo $row['url']   . "\n";
-
+            $thisEvent = array(
+                'id'      => $row['id'],
+                'lastup'  => $row['lastup'],
+                'etype'   => $row['etype'],
+                'estatus' => $row['estatus'],
+                'base'    => array(
+                    'owner' => $row['owner'],
+                    'repo' => $row['repo'],
+                    'git' => $row['git'],
+                    'sha' => $row['sha'],
+                    'url' => $row['url']
+                )
+            );
             if( $row['etype'] == ghType::pull )
             {
-                echo "Head:\n";
-                echo $row['owner_p'] . "\n";
-                echo $row['repo_p']  . "\n";
-                echo $row['git_p']   . "\n";
-                echo $row['sha_p']   . "\n";
-                echo $row['url_p']   . "\n";
+                array_push($thisEvent, array(
+                    'head' => array(
+                        'owner' => $row['owner_p'],
+                        'repo' => $row['repo_p'],
+                        'git' => $row['git_p'],
+                        'sha' => $row['sha_p'],
+                        'url' => $row['url_p']
+                        )
+                    )
+                );
             }
+
+            //$json = json_encode( $thisEvent );
+            //echo $json;
+            print_r( $thisEvent );
             echo "\n";
         }
     }
