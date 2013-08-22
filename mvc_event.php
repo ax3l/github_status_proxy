@@ -18,8 +18,10 @@
  *  along with github_status_proxy. If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once('ghStatus.php');
+require_once('config.php');
+require_once('enums.php');
 require_once('mvc.php');
+require_once('mvc_test.php');
 
 class mvc_event extends mvc
 {
@@ -37,6 +39,7 @@ class mvc_event extends mvc
      */
     protected $columns = array(
       array( 'name' => "id", 'type' => "INTEGER", 'prop' => "PRIMARY KEY AUTOINCREMENT", 'format' => "%d", 'default' => TRUE),
+      array( 'name' => "key", 'type' => "TEXT", 'prop' => "NOT NULL",       'format' => "%s", 'default' => FALSE),
       array( 'name' => "etype", 'type' => "TEXT", 'prop' => "NOT NULL",     'format' => "%s", 'default' => FALSE),
       array( 'name' => "estatus", 'type' => "TEXT", 'prop' => "NOT NULL",   'format' => "%s", 'default' => FALSE),
       array( 'name' => "sha", 'type' => "CHAR(40)", 'prop' => "NOT NULL",   'format' => "%s", 'default' => FALSE),
@@ -114,6 +117,7 @@ class mvc_event extends mvc
         $mvcEvent = new mvc_event();
 
         $query = sprintf( $mvcEvent->getInsertSQL(),
+                          SQLite3::escapeString( crypt( config::statusSalt . rand() . $payload ) ),
                           SQLite3::escapeString( $eventType ),
                           SQLite3::escapeString( eventStatus::received ),
                           SQLite3::escapeString( $sha ),
@@ -133,6 +137,9 @@ class mvc_event extends mvc
         // trigger github pending status
         $ghParser->setStatus( $db, $newID, ghStatus::pending,
                               "received by status proxy" );
+
+        /// @todo insert to `test` table as "has to be tested" for each test client
+        /// ...
     }
 
     function setStatus( &$db, $id, $estatus )
@@ -165,11 +172,44 @@ class mvc_event extends mvc
         return $result->fetchArray();
     }
 
+    function getByEventKey( &$db, $key )
+    {
+        $mvcTest = new mvc_test();
+        $mvcTest->getName();
+
+        $queryTpl = "SELECT *, %s.id as %s_id" .
+                    " FROM `%s`" .
+                    " LEFT JOIN `%s`" .
+                    " ON %s.id=%s.eventid" .
+                    " WHERE key='%s';";
+        $query = sprintf( $queryTpl,
+                          $mvcTest->getName(),
+                          $mvcTest->getName(),
+                          $this->getName(),
+                          $mvcTest->getName(),
+                          $this->getName(),
+                          $mvcTest->getName(),
+                          SQLite3::escapeString( $key )
+                        );
+
+        $result = $db->query( $query );
+
+        if( ! $result )
+            return NULL;
+
+        $allRows = array();
+        while( $thisRow = $result->fetchArray() )
+        {
+            array_push( $allRows, $thisRow );
+        }
+        return $allRows;
+    }
+
     /** get new work and mark as eventStatus::scheduled
      *
      *  start with oldest eventStatus::received events
      */
-    function getNext( &$db )
+    function getNext( &$db, &$ghParser )
     {
         $results = $db->query("SELECT * " .
                               " FROM " . $this->name .
@@ -211,8 +251,9 @@ class mvc_event extends mvc
             // mark as scheduled in `event` table
             $this->setStatus( $db, $thisEvent['id'], eventStatus::scheduled );
 
-            /// @todo insert to `test` table
-            /// ...
+            // trigger github pending status (update to pending at client side)
+            $ghParser->setStatus( $db, $thisEvent['id'], ghStatus::pending,
+                                  "scheduled to test client" );
         }
     }
     
@@ -227,6 +268,7 @@ class mvc_event extends mvc
         {
             $thisEvent = array(
                 'id'      => $row['id'],
+                'key'     => $row['key'],
                 'lastup'  => $row['lastup'],
                 'etype'   => $row['etype'],
                 'estatus' => $row['estatus'],

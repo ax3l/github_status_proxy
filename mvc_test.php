@@ -18,6 +18,8 @@
  *  along with github_status_proxy. If not, see <http://www.gnu.org/licenses/>.
  */
 
+require_once('config.php');
+require_once('enums.php');
 require_once('mvc.php');
 require_once('mvc_event.php');
 
@@ -32,8 +34,48 @@ class mvc_test extends mvc
       array( 'name' => "eventid", 'type' => "INTEGER", 'prop' => "NOT NULL REFERENCES `event`( `id` ) ON UPDATE CASCADE ON DELETE CASCADE", 'format' => "%d", 'default' => FALSE),
       array( 'name' => "client", 'type' => "TEXT", 'prop' => "NOT NULL",  'format' => "%s", 'default' => FALSE),
       array( 'name' => "lastup", 'type' => "DATETIME", 'prop' => "DEFAULT CURRENT_TIMESTAMP",  'format' => "YYYY-MM-DD HH:MM:SS", 'default' => TRUE),
-      array( 'name' => "status", 'type' => "TEXT", 'prop' => "NOT NULL",  'format' => "%s", 'default' => FALSE)
+      array( 'name' => "result", 'type' => "TEXT", 'prop' => "NOT NULL",  'format' => "%s", 'default' => FALSE),
+      array( 'name' => "output", 'type' => "TEXT", 'prop' => "NOT NULL",  'format' => "%s", 'default' => FALSE)
     );
+
+    function add( &$db, &$ghParser, $eventid, $clientname, $result, $output )
+    {
+        if( config::maxlen > 0 )
+            $output = substr( $output, 0, config::maxlen );
+
+        $mvcTest = new mvc_test();
+
+        $query = sprintf( $mvcTest->getInsertSQL(),
+                          SQLite3::escapeString( $eventid ),
+                          SQLite3::escapeString( $clientname ),
+                          SQLite3::escapeString( $result ),
+                          SQLite3::escapeString( $output )
+                        );
+        $newID = $db->insert( $query );
+
+        // update event status
+        $mvcEvent = new mvc_event();
+        $eventStatus = eventStatus::analysed;
+
+        // if the test client errored internally,
+        // re-schedule at the end of the queue
+        if( $result == $testResult::error && config::retryOnClientError )
+        {
+            $eventStatus = eventStatus::received;
+        }
+
+        // update `event` table
+        $mvcEvent->setStatus( $db, $eventid, $eventStatus );
+
+        // trigger github status update
+        $ghStatus = ghStatus::success;
+        if( $result == $testResult::error )
+            $ghStatus = ghStatus::error;
+        if( $result == $testResult::failure )
+            $ghStatus = ghStatus::failure;
+
+        $ghParser->setStatus( $db, $eventid, $ghStatus );
+    }
 
 } // class mvc_test
 

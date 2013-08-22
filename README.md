@@ -29,14 +29,16 @@ Prepate:
     https://api.github.com/repos/:user/:repo/hooks
   ```
 
-- create a tooken for the `config.php`:
+- create a tooken for the `config.php` -> `access_token`:
   ```bash
   curl -i -u :user -d \
     '{"scopes": ["repo:status"], "note": ["GitHub Proxy"], "note_url": ["yourUrl"]}' \
     https://api.github.com/authorizations
   ```
 
-- create a random secret for your client to connect to our scheduler `config.php` -> `$client_secret`:
+- create **two** random secrets:
+  - for your test client to connect to your proxy/scheduler `config.php` -> `$client_secret`
+  - for the salt for the keys for unauthorized users `config.php` -> `statusSalt`
   ```bash
   apg -m 20
   ```

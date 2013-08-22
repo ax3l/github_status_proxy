@@ -42,9 +42,14 @@ class config
     //   secret its value
     public static $client_secret = array( "client" => "..." );
 
-    // Timout after which the event is scheduled again as "needs to be tested"
+    // Timout after which the test marked as errored and the test is scheduled again
+    // as "has to be tested"
     // in hours
+    // note: not implemented yet
     const clientTimeout = 2.0;
+
+    // Re-Try a client test at the end of the queue if the client errored internally
+    const retryOnClientError = FALSE;
 
     // Name of our database to store tasks and status
     const dbName = "db/states.db";
@@ -58,6 +63,9 @@ class config
      array( 'ip' => "204.232.175.64", 'mask' => "27"),
      array( 'ip' => "192.30.252.0",   'mask' => "22") );
 
+    // Salt for unauthorized user requests
+    const statusSalt = "...";
+
     // debug output - DISABLE for production runs!
     // note: this will probably confuse your connected test clients
     const debug = TRUE;
@@ -67,7 +75,7 @@ class config
     /// @todo maxentries not implemented yet
     const maxentries = 0;
 
-    // maximum length of the payload in chars
+    // maximum length of the payload / test client output in chars
     // 0 means: no limit
     const maxlen = 100000;
 

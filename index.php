@@ -28,7 +28,7 @@
 /** Includes ******************************************************************
  */
 require_once('config.php');
-require_once('ghStatus.php');
+require_once('enums.php');
 require_once('ipRange.php');
 require_once('dbHandler.php');
 require_once('mvc_event.php');
@@ -74,6 +74,7 @@ elseif( $client['isClient'] )
     if( config::debug )
         echo "Hello " . $client['name'] . "\n";
 
+    $payload = "";
     // Receive request payload
     if( isset( $_POST['payload'] ) )
         $payload = $_POST['payload'];
@@ -96,14 +97,49 @@ elseif( $client['isClient'] )
             echo "request new work\n";
 
         $mvcEvent = new mvc_event();
-        $mvcEvent->getNext( $db );
+        $mvcEvent->getNext( $db, $ghParser );
     }
     elseif( $dec->action == clientReport::report )
     {
         if( config::debug )
             echo "report test results<br />";
 
-        // ...
+        $eventid = "";
+        // Receive request result
+        if( isset( $_POST['eventid'] ) )
+            $eventid = $_POST['eventid'];
+        elseif( isset( $_GET['eventid'] ) )
+            $eventid = $_GET['eventid'];
+        else
+        {
+            if( config::debug )
+                echo "No eventid specified\n";
+        }
+        $result = "";
+        // Receive request result
+        if( isset( $_POST['result'] ) )
+            $result = $_POST['result'];
+        elseif( isset( $_GET['result'] ) )
+            $result = $_GET['result'];
+        else
+        {
+            if( config::debug )
+                echo "No result specified\n";
+        }
+        $output = "";
+        // Receive request output
+        if( isset( $_POST['output'] ) )
+            $output = $_POST['output'];
+        elseif( isset( $_GET['output'] ) )
+            $output = $_GET['output'];
+        else
+        {
+            if( config::debug )
+                echo "No output specified\n";
+        }
+
+        $mvcTest = new mvc_test();
+        $mvcTest->add( $db, $ghParser, $eventid, $client['name'], $result, $output );
     }
     else
     {
@@ -117,18 +153,49 @@ else
     if( config::debug )
         echo "Hello you!\n";
 
-    $mvcEvent = new mvc_event();
-    $mvcEvent->getList( $db );
+    $statusKey = NULL;
+    // Receive request output
+    if( isset( $_POST['status'] ) )
+        $statusKey = $_POST['status'];
+    elseif( isset( $_GET['status'] ) )
+        $statusKey = $_GET['status'];
+    else
+    {
+        if( config::debug )
+            echo "No status specified\n";
+    }
     
-    $ghParser = new connectGitHub( );
-    //$ghParser->setStatus( $db, 15, ghStatus::success );
-    /*
-    $mvcEvent->add( $db, $ghParser, '{ "after" : "237a99b", "repository" : { ' .
-                                '"owner" : { "email" : null, ' .
-                                            '"name" : ":owner" }, ' .
-                                '"url" : "https://github.com/:owner/:repo", "name" : ":repo" }' .
-                         '}' );
-    */
+    if( isset( $statusKey ) )
+    {
+        if( config::debug )
+            echo "Requested tests for event key " . $statusKey . "\n";
+
+        $mvcEvent = new mvc_event();
+
+        // getByEventKey, joined with `test` table
+        //
+        print_r( $mvcEvent->getByEventKey( $db, $statusKey ) );
+
+        /// @todo show nice and handy user output of all `test` 's for this `event` table entry
+        /// ...
+    }
+    else
+    {
+        //$ghParser = new connectGitHub( );
+        //$ghParser->setStatus( $db, 15, ghStatus::success );
+        /*
+        $mvcEvent->add( $db, $ghParser, '{ "after" : "237a99b", "repository" : { ' .
+                                    '"owner" : { "email" : null, ' .
+                                                '"name" : ":owner" }, ' .
+                                    '"url" : "https://github.com/:owner/:repo", "name" : ":repo" }' .
+                             '}' );
+        */
+        if( config::debug )
+        {
+            $mvcEvent = new mvc_event();
+            $mvcEvent->getList( $db );
+        }
+    }
 }
 
 unset( $db );

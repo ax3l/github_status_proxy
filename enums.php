@@ -60,4 +60,15 @@ class eventStatus
 
 } // class clientReport
 
+class testResult
+{
+    /** success */
+    const success = 'success';
+    /** failure */
+    const failure = 'failure';
+    /** test client errored internally */
+    const error   = 'error';
+
+} // class testResult
+
 ?>

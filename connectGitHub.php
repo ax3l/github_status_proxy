@@ -18,7 +18,7 @@
  */
 
 require_once('config.php');
-require_once('ghStatus.php');
+require_once('enums.php');
 require_once('mvc_event.php');
 
 class connectGitHub
@@ -53,7 +53,7 @@ class connectGitHub
         $evEntry = $mvcEvent->getById( $db, $dbId );
         
         /** description */
-        $description = "Build status - " . $status;
+        $description = "Test status - " . $status;
         if( isset( $postDesc ) )
             $description .= " - " . $postDesc;
 
@@ -63,7 +63,7 @@ class connectGitHub
                "/statuses/" .       
                $evEntry['sha'];
         $data = '{"state": "' . $status . '", ' .
-                ' "target_url": "' . config::url . '?status=' . $evEntry['sha'] . '", ' .
+                ' "target_url": "' . config::url . '?status=' . $evEntry['key'] . '", ' .
                 ' "description": "' . $description . '"}';
         
         /** send to GitHub */
@@ -73,7 +73,7 @@ class connectGitHub
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array( "Authorization: token " . config::access_token ) );
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-        curl_setopt ($ch, CURLOPT_SSL_VERIFYPEER, TRUE);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, TRUE);
         // mozilla CA bundle from
         //   http://curl.haxx.se/docs/caextract.html
         curl_setopt ($ch, CURLOPT_CAINFO, "cacert.pem");
