@@ -1,9 +1,33 @@
 <?php
 
+/** Copyright 2013 Axel Huebl
+ *
+ *  This file is part of github_status_proxy.
+ *
+ *  github_status_proxy is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  github_status_proxy is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with github_status_proxy. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 class config
 {
     // tokens
     // limits
+
+    // create your hooks by
+    //   http://developer.github.com/v3/repos/hooks/#create-a-hook
+    //   POST /repos/:owner/:repo/hooks
+    //   curl -i -u :user -d '{"name": "web", "active": true, "events": ["push", "pull_request"], "config": {"url": ":url", "content_type": "form"}}'
+    //        https://api.github.com/repos/:user/:repo/hooks
 
     // GitHub OAuth access token
     //   the token needs at least repo:status privileges
@@ -29,11 +53,12 @@ class config
     
     // maximum number of commits/pull requests to store
     // 0 means: no limit
+    /// @todo maxentries not implemented yet
     const maxentries = 0;
     
     // maximum length of the payload in chars
     // 0 means: no limit
-    const maxlen = 10000;
+    const maxlen = 100000;
     
     // url of this proxy
     const url = "...";

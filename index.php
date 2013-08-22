@@ -1,5 +1,23 @@
 <?php
 
+/** Copyright 2013 Axel Huebl
+ *
+ *  This file is part of github_status_proxy.
+ *
+ *  github_status_proxy is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  github_status_proxy is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with github_status_proxy. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 // To do:
 // - write test client binding / api and sceduler
 // - allow multiple tests / event
@@ -61,7 +79,13 @@ else
     
     $ghParser = new connectGitHub( );
     //$ghParser->setStatus( $db, 15, ghStatus::success );
-    //$mvcEvent->add( $db, "test123" );
+    /*
+    $mvcEvent->add( $db, '{ "after" : "237a99b", "repository" : { ' .
+                                '"owner" : { "email" : null, ' .
+                                            '"name" : ":owner" }, ' .
+                                '"url" : "https://github.com/:owner/:repo", "name" : ":repo" }' .
+                         '}' );
+    */
 }
 
 exit( 0 );
