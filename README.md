@@ -55,9 +55,11 @@ more details.
 To do
 -----
 
-- check where to set the status for a pull-request in the GitHub API
+- if a `pull request` gets an update, do not schedule the old commits that are still in `received`-state
 - create entries for each test client in `test` table as soon as an event
   is created OR define "no entry" = "has to be tested"
+- access `tests` only via the `event` MVC object
+- create two tables `commit` and `pull` and de-clutter `event` table
 - Round Robin
     http://www.mail-archive.com/sqlite-users@sqlite.org/msg60752.html
 - put db in a password protected sub dir (and check that)
