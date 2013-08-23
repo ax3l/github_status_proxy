@@ -94,14 +94,15 @@ class mvc_event extends mvc
             if( $dec->action == "closed" )
                 return;
 
-            // base repo to merge to
+            // head of the branch of the forked repo to merge from
             $url = $dec->pull_request->head->repo->html_url;
             $git = $dec->pull_request->head->repo->clone_url;
             $own = $dec->pull_request->head->repo->owner->login;
             $rep = $dec->pull_request->head->repo->name;
             $sha = substr( $dec->pull_request->head->sha, 0, 40 );
+            $branch = $dec->pull_request->head->ref;
 
-            // head of the branch of the forked repo to merge from
+            // base repo to merge to
             $url_b = $dec->pull_request->base->repo->html_url;
             $git_b = $dec->pull_request->base->repo->clone_url;
             $own_b = $dec->pull_request->base->repo->owner->login;
@@ -218,6 +219,12 @@ class mvc_event extends mvc
                               " LIMIT 1");
         while( $row = $results->fetchArray() )
         {
+            /// @todo clean into database
+            $head_branch = "null";
+            if( $row['etype'] == ghType::pull )
+            {
+                $head_branch = json_decode($row['payload'])->head->ref;
+            }
             $thisEvent = array(
                 'id' => $row['id'],
                 'lastup' => $row['lastup'],
@@ -227,7 +234,8 @@ class mvc_event extends mvc
                     'repo' => $row['repo'],
                     'git' => $row['git'],
                     'sha' => $row['sha'],
-                    'url' => $row['url']
+                    'url' => $row['url'],
+                    'branch' => $head_branch
                 )
             );
             if( $row['etype'] == ghType::pull )
