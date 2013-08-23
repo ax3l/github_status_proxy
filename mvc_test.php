@@ -43,9 +43,7 @@ class mvc_test extends mvc
         if( config::maxlen > 0 )
             $output = substr( $output, 0, config::maxlen );
 
-        $mvcTest = new mvc_test();
-
-        $query = sprintf( $mvcTest->getInsertSQL(),
+        $query = sprintf( $this->getInsertSQL(),
                           SQLite3::escapeString( $eventid ),
                           SQLite3::escapeString( $clientname ),
                           SQLite3::escapeString( $result ),
