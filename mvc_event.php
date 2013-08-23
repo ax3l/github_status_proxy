@@ -43,15 +43,15 @@ class mvc_event extends mvc
       array( 'name' => "etype", 'type' => "TEXT", 'prop' => "NOT NULL",     'format' => "%s", 'default' => FALSE),
       array( 'name' => "estatus", 'type' => "TEXT", 'prop' => "NOT NULL",   'format' => "%s", 'default' => FALSE),
       array( 'name' => "sha", 'type' => "CHAR(40)", 'prop' => "NOT NULL",   'format' => "%s", 'default' => FALSE),
-      array( 'name' => "sha_p", 'type' => "CHAR(40)", 'prop' => "NOT NULL", 'format' => "%s", 'default' => FALSE),
+      array( 'name' => "sha_b", 'type' => "CHAR(40)", 'prop' => "NOT NULL", 'format' => "%s", 'default' => FALSE),
       array( 'name' => "owner", 'type' => "TEXT", 'prop' => "NOT NULL",     'format' => "%s", 'default' => FALSE),
-      array( 'name' => "owner_p", 'type' => "TEXT", 'prop' => "NOT NULL",   'format' => "%s", 'default' => FALSE),
+      array( 'name' => "owner_b", 'type' => "TEXT", 'prop' => "NOT NULL",   'format' => "%s", 'default' => FALSE),
       array( 'name' => "repo", 'type' => "TEXT", 'prop' => "NOT NULL",      'format' => "%s", 'default' => FALSE),
-      array( 'name' => "repo_p", 'type' => "TEXT", 'prop' => "NOT NULL",    'format' => "%s", 'default' => FALSE),
+      array( 'name' => "repo_b", 'type' => "TEXT", 'prop' => "NOT NULL",    'format' => "%s", 'default' => FALSE),
       array( 'name' => "url", 'type' => "TEXT", 'prop' => "NOT NULL",       'format' => "%s", 'default' => FALSE),
-      array( 'name' => "url_p", 'type' => "TEXT", 'prop' => "NOT NULL",     'format' => "%s", 'default' => FALSE),
+      array( 'name' => "url_b", 'type' => "TEXT", 'prop' => "NOT NULL",     'format' => "%s", 'default' => FALSE),
       array( 'name' => "git", 'type' => "TEXT", 'prop' => "NOT NULL",       'format' => "%s", 'default' => FALSE),
-      array( 'name' => "git_p", 'type' => "TEXT", 'prop' => "NOT NULL",     'format' => "%s", 'default' => FALSE),
+      array( 'name' => "git_b", 'type' => "TEXT", 'prop' => "NOT NULL",     'format' => "%s", 'default' => FALSE),
       array( 'name' => "lastup", 'type' => "DATETIME", 'prop' => "DEFAULT CURRENT_TIMESTAMP", 'format' => "YYYY-MM-DD HH:MM:SS", 'default' => TRUE),
       array( 'name' => "payload", 'type' => "TEXT", 'prop' => "NOT NULL",  'format' => "%s", 'default' => FALSE)
     );
@@ -71,7 +71,7 @@ class mvc_event extends mvc
             $eventType = ghType::pull;
 
         $url = ""; $git = ""; $own = ""; $rep = ""; $sha = "";
-        $url_p = ""; $git_p = ""; $own_p = ""; $rep_p = ""; $sha_p = "";
+        $url_b = ""; $git_b = ""; $own_b = ""; $rep_b = ""; $sha_b = "";
 
         if( $eventType == ghType::commit )
         {
@@ -81,11 +81,11 @@ class mvc_event extends mvc
             $git = "git://github.com/" . $own . "/" . $rep . ".git";
             $sha = substr( $dec->after, 0, 40 );
 
-            $url_p = $url;
-            $git_p = $git;
-            $own_p = $own;
-            $rep_p = $rep;
-            $sha_p = $sha;
+            $url_b = $url;
+            $git_b = $git;
+            $own_b = $own;
+            $rep_b = $rep;
+            $sha_b = $sha;
         }
         elseif( $eventType == ghType::pull )
         {
@@ -95,18 +95,18 @@ class mvc_event extends mvc
                 return;
 
             // base repo to merge to
-            $url = $dec->pull_request->base->repo->html_url;
-            $git = $dec->pull_request->base->repo->clone_url;
-            $own = $dec->pull_request->base->repo->owner->login;
-            $rep = $dec->pull_request->base->repo->name;
-            $sha = substr( $dec->pull_request->base->sha, 0, 40 );
+            $url = $dec->pull_request->head->repo->html_url;
+            $git = $dec->pull_request->head->repo->clone_url;
+            $own = $dec->pull_request->head->repo->owner->login;
+            $rep = $dec->pull_request->head->repo->name;
+            $sha = substr( $dec->pull_request->head->sha, 0, 40 );
 
             // head of the branch of the forked repo to merge from
-            $url_p = $dec->pull_request->head->repo->html_url;
-            $git_p = $dec->pull_request->head->repo->clone_url;
-            $own_p = $dec->pull_request->head->repo->owner->login;
-            $rep_p = $dec->pull_request->head->repo->name;
-            $sha_p = substr( $dec->pull_request->head->sha, 0, 40 );
+            $url_b = $dec->pull_request->base->repo->html_url;
+            $git_b = $dec->pull_request->base->repo->clone_url;
+            $own_b = $dec->pull_request->base->repo->owner->login;
+            $rep_b = $dec->pull_request->base->repo->name;
+            $sha_b = substr( $dec->pull_request->base->sha, 0, 40 );
         }
         else
         {
@@ -121,15 +121,15 @@ class mvc_event extends mvc
                           SQLite3::escapeString( $eventType ),
                           SQLite3::escapeString( eventStatus::received ),
                           SQLite3::escapeString( $sha ),
-                          SQLite3::escapeString( $sha_p ),
+                          SQLite3::escapeString( $sha_b ),
                           SQLite3::escapeString( $own ),
-                          SQLite3::escapeString( $own_p ),
+                          SQLite3::escapeString( $own_b ),
                           SQLite3::escapeString( $rep ),
-                          SQLite3::escapeString( $rep_p ),
+                          SQLite3::escapeString( $rep_b ),
                           SQLite3::escapeString( $url ),
-                          SQLite3::escapeString( $url_p ),
+                          SQLite3::escapeString( $url_b ),
                           SQLite3::escapeString( $git ),
-                          SQLite3::escapeString( $git_p ),
+                          SQLite3::escapeString( $git_b ),
                           SQLite3::escapeString( $payload )
                         );
         $newID = $db->insert( $query );
@@ -222,7 +222,7 @@ class mvc_event extends mvc
                 'id' => $row['id'],
                 'lastup' => $row['lastup'],
                 'etype' => $row['etype'],
-                'base' => array(
+                'head' => array(
                     'owner' => $row['owner'],
                     'repo' => $row['repo'],
                     'git' => $row['git'],
@@ -233,20 +233,22 @@ class mvc_event extends mvc
             if( $row['etype'] == ghType::pull )
             {
                 array_push($thisEvent, array(
-                    'head' => array(
-                        'owner' => $row['owner_p'],
-                        'repo' => $row['repo_p'],
-                        'git' => $row['git_p'],
-                        'sha' => $row['sha_p'],
-                        'url' => $row['url_p']
+                    'base' => array(
+                        'owner' => $row['owner_b'],
+                        'repo' => $row['repo_b'],
+                        'git' => $row['git_b'],
+                        'sha' => $row['sha_b'],
+                        'url' => $row['url_b']
                         )
                     )
                 );
             }
 
-            //$json = json_encode( $thisEvent );
-            //echo $json;
-            print_r( $thisEvent );
+            $json = json_encode( $thisEvent, JSON_PRETTY_PRINT );
+            echo $json;
+
+            //print_r( $thisEvent );
+            echo "\n";
 
             // mark as scheduled in `event` table
             $this->setStatus( $db, $thisEvent['id'], eventStatus::scheduled );
@@ -272,7 +274,7 @@ class mvc_event extends mvc
                 'lastup'  => $row['lastup'],
                 'etype'   => $row['etype'],
                 'estatus' => $row['estatus'],
-                'base'    => array(
+                'head'    => array(
                     'owner' => $row['owner'],
                     'repo' => $row['repo'],
                     'git' => $row['git'],
@@ -283,20 +285,21 @@ class mvc_event extends mvc
             if( $row['etype'] == ghType::pull )
             {
                 array_push($thisEvent, array(
-                    'head' => array(
-                        'owner' => $row['owner_p'],
-                        'repo' => $row['repo_p'],
-                        'git' => $row['git_p'],
-                        'sha' => $row['sha_p'],
-                        'url' => $row['url_p']
+                    'base' => array(
+                        'owner' => $row['owner_b'],
+                        'repo' => $row['repo_b'],
+                        'git' => $row['git_b'],
+                        'sha' => $row['sha_b'],
+                        'url' => $row['url_b']
                         )
                     )
                 );
             }
 
-            //$json = json_encode( $thisEvent );
-            //echo $json;
-            print_r( $thisEvent );
+            $json = json_encode( $thisEvent, JSON_PRETTY_PRINT );
+            echo $json;
+
+            //print_r( $thisEvent );
             echo "\n";
         }
     }

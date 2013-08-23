@@ -59,7 +59,7 @@ class mvc_test extends mvc
 
         // if the test client errored internally,
         // re-schedule at the end of the queue
-        if( $result == $testResult::error && config::retryOnClientError )
+        if( $result == testResult::error && config::retryOnClientError )
         {
             $eventStatus = eventStatus::received;
         }
@@ -69,9 +69,9 @@ class mvc_test extends mvc
 
         // trigger github status update
         $ghStatus = ghStatus::success;
-        if( $result == $testResult::error )
+        if( $result == testResult::error )
             $ghStatus = ghStatus::error;
-        if( $result == $testResult::failure )
+        if( $result == testResult::failure )
             $ghStatus = ghStatus::failure;
 
         $ghParser->setStatus( $db, $eventid, $ghStatus );

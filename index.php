@@ -18,14 +18,6 @@
  *  along with github_status_proxy. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// To do:
-// - create entries for each test client in `test` table as soon as an event
-//   is created OR define "no entry" = "has to be tested"
-// - Round Robin
-//     http://www.mail-archive.com/sqlite-users@sqlite.org/msg60752.html
-// - put db in a password protected sub dir
-// - format unauth client status request
-
 /** Includes ******************************************************************
  */
 require_once('config.php');
@@ -106,40 +98,12 @@ elseif( $client['isClient'] )
         if( config::debug )
             echo "report test results<br />";
 
-        $eventid = "";
-        // Receive request result
-        if( isset( $_POST['eventid'] ) )
-            $eventid = $_POST['eventid'];
-        elseif( isset( $_GET['eventid'] ) )
-            $eventid = $_GET['eventid'];
-        else
-        {
-            if( config::debug )
-                echo "No eventid specified\n";
-        }
-        $result = "";
-        // Receive request result
-        if( isset( $_POST['result'] ) )
-            $result = $_POST['result'];
-        elseif( isset( $_GET['result'] ) )
-            $result = $_GET['result'];
-        else
-        {
-            if( config::debug )
-                echo "No result specified\n";
-        }
-        $output = "";
-        // Receive request output
-        if( isset( $_POST['output'] ) )
-            $output = $_POST['output'];
-        elseif( isset( $_GET['output'] ) )
-            $output = $_GET['output'];
-        else
-        {
-            if( config::debug )
-                echo "No output specified\n";
-        }
+        // payload={"action":"report","eventid":1,"result":"success","output":"..."}
+        $eventid = $dec->eventid;
+        $result  = $dec->result;
+        $output  = $dec->output;
 
+        $ghParser = new connectGitHub( );
         $mvcTest = new mvc_test();
         $mvcTest->add( $db, $ghParser, $eventid, $client['name'], $result, $output );
     }
@@ -183,9 +147,10 @@ else
     }
     else
     {
-        //$ghParser = new connectGitHub( );
+        $ghParser = new connectGitHub( );
         //$ghParser->setStatus( $db, 15, ghStatus::success );
         /*
+        $mvcEvent = new mvc_event();
         $mvcEvent->add( $db, $ghParser, '{ "after" : "237a99b", "repository" : { ' .
                                     '"owner" : { "email" : null, ' .
                                                 '"name" : ":owner" }, ' .

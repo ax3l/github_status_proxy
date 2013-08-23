@@ -14,6 +14,7 @@ Install
 -------
 
 Requires
+- PHP 5.4.0+
 - `php5-sqlite` (SQLite3)
 - `php5-curl`
 
