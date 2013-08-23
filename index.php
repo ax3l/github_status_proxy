@@ -86,6 +86,7 @@ elseif( $client['isClient'] )
     $dec = json_decode( $payload );
     if( $dec->action == clientReport::request )
     {
+        // payload={"action":"request"}
         if( config::debug )
             echo "request new work\n";
 
@@ -95,10 +96,10 @@ elseif( $client['isClient'] )
     }
     elseif( $dec->action == clientReport::report )
     {
+        // payload={"action":"report","eventid":1,"result":"success","output":"..."}
         if( config::debug )
             echo "report test results<br />";
 
-        // payload={"action":"report","eventid":1,"result":"success","output":"..."}
         $eventid = $dec->eventid;
         $result  = $dec->result;
         $output  = $dec->output;
