@@ -57,9 +57,21 @@ class connectGitHub
         if( isset( $postDesc ) )
             $description .= " - " . $postDesc;
 
+        /** data */
+        // commits
+        $owner = $evEntry['owner'];
+        $repo = $evEntry['repo'];
+
+        // pull requests - write status in BASE repos
+        if( $evEntry['etype'] == ghType::pull )
+        {
+            $owner = $evEntry['owner_b'];
+            $repo = $evEntry['repo_b'];
+        }
+
         /** JSON params */
         $url = config::api . "/repos/" .
-               $evEntry['owner'] . "/" . $evEntry['repo'] .
+               $owner . "/" . $repo .
                "/statuses/" .       
                $evEntry['sha'];
         $data = '{"state": "' . $status . '", ' .
