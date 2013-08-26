@@ -50,6 +50,8 @@ class mvc_event extends mvc
       array( 'name' => "repo_b", 'type' => "TEXT", 'prop' => "NOT NULL",    'format' => "%s", 'default' => FALSE),
       array( 'name' => "url", 'type' => "TEXT", 'prop' => "NOT NULL",       'format' => "%s", 'default' => FALSE),
       array( 'name' => "url_b", 'type' => "TEXT", 'prop' => "NOT NULL",     'format' => "%s", 'default' => FALSE),
+      array( 'name' => "branch", 'type' => "TEXT", 'prop' => "NOT NULL",    'format' => "%s", 'default' => FALSE),
+      array( 'name' => "branch_b", 'type' => "TEXT", 'prop' => "NOT NULL",  'format' => "%s", 'default' => FALSE),
       array( 'name' => "git", 'type' => "TEXT", 'prop' => "NOT NULL",       'format' => "%s", 'default' => FALSE),
       array( 'name' => "git_b", 'type' => "TEXT", 'prop' => "NOT NULL",     'format' => "%s", 'default' => FALSE),
       array( 'name' => "lastup", 'type' => "DATETIME", 'prop' => "DEFAULT CURRENT_TIMESTAMP", 'format' => "YYYY-MM-DD HH:MM:SS", 'default' => TRUE),
@@ -70,18 +72,20 @@ class mvc_event extends mvc
         if( isset( $dec->pull_request) )
             $eventType = ghType::pull;
 
-        $url = ""; $git = ""; $own = ""; $rep = ""; $sha = "";
-        $url_b = ""; $git_b = ""; $own_b = ""; $rep_b = ""; $sha_b = "";
+        $url = ""; $git = ""; $own = ""; $rep = ""; $sha = ""; $bra = "";
+        $url_b = ""; $git_b = ""; $own_b = ""; $rep_b = ""; $sha_b = ""; $bra_b = "";
 
         if( $eventType == ghType::commit )
         {
             $url = $dec->repository->url;
+            $bra = preg_split('/\//', $dec->ref)[2];
             $own = $dec->repository->owner->name;
             $rep = $dec->repository->name;
             $git = "git://github.com/" . $own . "/" . $rep . ".git";
             $sha = substr( $dec->after, 0, 40 );
 
             $url_b = $url;
+            $bra_b = $bra;
             $git_b = $git;
             $own_b = $own;
             $rep_b = $rep;
@@ -96,14 +100,15 @@ class mvc_event extends mvc
 
             // head of the branch of the forked repo to merge from
             $url = $dec->pull_request->head->repo->html_url;
+            $bra = $dec->pull_request->head->ref;
             $git = $dec->pull_request->head->repo->clone_url;
             $own = $dec->pull_request->head->repo->owner->login;
             $rep = $dec->pull_request->head->repo->name;
             $sha = substr( $dec->pull_request->head->sha, 0, 40 );
-            $branch = $dec->pull_request->head->ref;
 
             // base repo to merge to
             $url_b = $dec->pull_request->base->repo->html_url;
+            $bra_b = $dec->pull_request->base->ref;
             $git_b = $dec->pull_request->base->repo->clone_url;
             $own_b = $dec->pull_request->base->repo->owner->login;
             $rep_b = $dec->pull_request->base->repo->name;
@@ -129,6 +134,8 @@ class mvc_event extends mvc
                           SQLite3::escapeString( $rep_b ),
                           SQLite3::escapeString( $url ),
                           SQLite3::escapeString( $url_b ),
+                          SQLite3::escapeString( $bra ),
+                          SQLite3::escapeString( $bra_b ),
                           SQLite3::escapeString( $git ),
                           SQLite3::escapeString( $git_b ),
                           SQLite3::escapeString( $payload )
@@ -219,12 +226,6 @@ class mvc_event extends mvc
                               " LIMIT 1");
         while( $row = $results->fetchArray() )
         {
-            /// @todo clean into database
-            $head_branch = "null";
-            if( $row['etype'] == ghType::pull )
-            {
-                $head_branch = json_decode($row['payload'])->head->ref;
-            }
             $thisEvent = array(
                 'id' => $row['id'],
                 'lastup' => $row['lastup'],
@@ -235,7 +236,7 @@ class mvc_event extends mvc
                     'git' => $row['git'],
                     'sha' => $row['sha'],
                     'url' => $row['url'],
-                    'branch' => $head_branch
+                    'branch' => $row['branch']
                 )
             );
             if( $row['etype'] == ghType::pull )
@@ -246,7 +247,8 @@ class mvc_event extends mvc
                         'repo' => $row['repo_b'],
                         'git' => $row['git_b'],
                         'sha' => $row['sha_b'],
-                        'url' => $row['url_b']
+                        'url' => $row['url_b'],
+                        'branch' => $row['branch_b']
                         )
                     )
                 );
@@ -287,7 +289,8 @@ class mvc_event extends mvc
                     'repo' => $row['repo'],
                     'git' => $row['git'],
                     'sha' => $row['sha'],
-                    'url' => $row['url']
+                    'url' => $row['url'],
+                    'branch' => $row['branch']
                 )
             );
             if( $row['etype'] == ghType::pull )
@@ -298,7 +301,8 @@ class mvc_event extends mvc
                         'repo' => $row['repo_b'],
                         'git' => $row['git_b'],
                         'sha' => $row['sha_b'],
-                        'url' => $row['url_b']
+                        'url' => $row['url_b'],
+                        'branch' => $row['branch_b']
                         )
                     )
                 );
