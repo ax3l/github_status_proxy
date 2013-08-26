@@ -56,6 +56,7 @@ To do
 -----
 
 - if a `pull request` gets an update, do not schedule the old commits that are still in `received`-state
+- move whole client handling from `index.php` -> `testClient.php`
 - create entries for each test client in `test` table as soon as an event
   is created OR define "no entry" = "has to be tested"
 - access `tests` only via the `event` MVC object

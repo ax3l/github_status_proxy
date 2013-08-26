@@ -1,0 +1,41 @@
+/** Styles for data tables */
+table {
+    border-collapse: collapse;
+}
+table, th, td {
+    border: 1px solid #555;
+}
+th, td {
+     padding: 0.4em;
+}
+thead th {
+    background-color: #eee;
+    border: 1px solid #555;
+}
+/** Row status indicator */
+tbody tr.row_success {
+    background-color:  #7d4;
+}
+tbody tr:nth-child(odd).row_success {
+    background-color:  #ad9;
+}
+tbody tr.row_failure {
+    background-color:  #f55;
+}
+tbody tr:nth-child(odd).row_failure {
+    background-color:  #f33;
+}
+tbody tr.row_error {
+    background-color:  #ccc;
+}
+tbody tr:nth-child(odd).row_error {
+    background-color:  #bbb;
+}
+
+tbody td.field_result {
+          transform: rotate(-90.0deg);
+     -moz-transform: rotate(-90.0deg);
+       -o-transform: rotate(-90.0deg);
+  -webkit-transform: rotate(-90.0deg);
+}
+

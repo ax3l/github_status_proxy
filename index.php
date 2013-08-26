@@ -117,6 +117,14 @@ elseif( $client['isClient'] )
 /** Unauth visitor */
 else
 {
+    @header_remove("Content-type");
+    @header('Content-type: text/html; charset=utf-8');
+    echo "<!DOCTYPE html>";
+    echo "<html><head><meta charset='utf-8' /><title>Status report</title>";
+    echo '<link href="style/style.css" media="all" rel="stylesheet" type="text/css" />';
+    echo "</head>";
+    echo "<body>";
+
     if( config::debug )
         echo "Hello you!\n";
 
@@ -141,16 +149,49 @@ else
 
         // getByEventKey, joined with `test` table
         //
-        print_r( $mvcEvent->getByEventKey( $db, $statusKey ) );
+        $thisEntries = $mvcEvent->getByEventKey( $db, $statusKey );
 
-        /// @todo show nice and handy user output of all `test` 's for this `event` table entry
-        /// ...
+        // show nice and handy user output of all `test` 's for this `event` table entry
+        if( isset($thisEntries[0]['sha'] ) )
+        {
+            $thisId = $thisEntries[0]['id'];
+            $thisEtype = $thisEntries[0]['etype'];
+            $thisEstatus = $thisEntries[0]['estatus'];
+            $thisSHA = $thisEntries[0]['sha'];
+            $thisRepo = $thisEntries[0]['repo'];
+            $thisOwner = $thisEntries[0]['owner'];
+            $thisSHA_b = $thisEntries[0]['sha_b'];
+            $thisRepo_b = $thisEntries[0]['repo_b'];
+            $thisOwner_b = $thisEntries[0]['owner_b'];
+            $thisResult = $thisEntries[0]['result'];
+            $thisOutput = $thisEntries[0]['output'];
+
+            echo "<table><caption>Results for <em>" . $thisEtype . "</em> " . $thisOwner . "/" . $thisRepo . "@" . mb_substr($thisSHA, 0, 7);
+            if( $thisEtype == "pull" )
+                echo " -> " . $thisOwner_b . "/" . $thisRepo_b . "@" . mb_substr($thisSHA_b, 0, 7);
+            echo "</caption>";
+            echo "<thead><tr><th>test client</th><th>result</th><th>output</th></tr></thead>";
+            echo "<tbody>";
+            foreach( $thisEntries as $thisTest )
+            {
+                echo '<tr class="row_' . $thisTest['result'] . '">';
+                echo '<th>' . $thisTest['client'] . '</th>';
+                echo '<td class="field_result field_' . $thisTest['result'] . '">' . $thisTest['result'] . '</td>';
+                $thisOutput = trim( htmlentities( $thisTest['output'] , ENT_COMPAT, 'UTF-8' ) );
+                // remove emails: <*@*>
+                $thisOutput = preg_replace( "/\&lt\;.*@.*\&gt\;/", "" , $thisOutput );
+                echo '<td><pre>' . $thisOutput . '</pre></td>';
+                echo '</tr>';
+            }
+            echo "</tbody></table>";
+        }
     }
     else
     {
+        /*
         $ghParser = new connectGitHub( );
         //$ghParser->setStatus( $db, 15, ghStatus::success );
-        /*
+
         $mvcEvent = new mvc_event();
         $mvcEvent->add( $db, $ghParser, '{ "after" : "237a99b", "repository" : { ' .
                                     '"owner" : { "email" : null, ' .
@@ -160,10 +201,13 @@ else
         */
         if( config::debug )
         {
+            echo "<pre>";
             $mvcEvent = new mvc_event();
             $mvcEvent->getList( $db );
+            echo "</pre>";
         }
     }
+    echo "</body></html>";
 }
 
 unset( $db );
