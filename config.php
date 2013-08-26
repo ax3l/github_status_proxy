@@ -37,6 +37,13 @@ class config
     //     "note_url": ["yourUrl"]}' https://api.github.com/authorizations
     const access_token = "...";
 
+    // Username:Passwort you expect from github to auth itself during
+    // POST hook deliveries
+    // use a hook target like this:
+    //    https://github_username:github_password@url.net/yourPath
+    const github_username = "github";
+    const github_password = "...";
+
     // Client secret (one secret per test client)
     //   clients must auth theirselves with a POST variable "client" using the
     //   secret its value
@@ -68,7 +75,7 @@ class config
 
     // debug output - DISABLE for production runs!
     // note: this will probably confuse your connected test clients
-    const debug = TRUE;
+    const debug = FALSE;
 
     // maximum number of commits/pull requests to store
     // 0 means: no limit

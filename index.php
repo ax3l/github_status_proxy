@@ -31,7 +31,15 @@ require_once('connectGitHub.php');
 /** Helpers *******************************************************************
  */
 @header('Content-type: text/plain');
+
 $isGitHub = ipRange::test( $_SERVER['REMOTE_ADDR'] );
+if( $isGitHub )
+{
+    if( @$_SERVER['PHP_AUTH_USER'] != config::github_username ||
+        @$_SERVER['PHP_AUTH_PW']   != config::github_password )
+        $isGitHub = false;
+}
+
 $db = new dbHandler( $mvc_objects );
 
 $client=array( 'isClient' => FALSE, 'name' => "" );
@@ -188,6 +196,9 @@ else
     }
     else
     {
+        //$mvcEvent = new mvc_event();
+        //$mvcEvent->setStatus( $db, 2, eventStatus::received );
+
         /*
         $ghParser = new connectGitHub( );
         //$ghParser->setStatus( $db, 15, ghStatus::success );
