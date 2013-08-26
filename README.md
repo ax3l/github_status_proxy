@@ -63,7 +63,6 @@ To do
 - create two tables `commit` and `pull` and de-clutter `event` table
 - Round Robin
     http://www.mail-archive.com/sqlite-users@sqlite.org/msg60752.html
-- put db in a password protected sub dir (and check that)
 - add Syntax Highlighting for user side views
   - [install](http://alexgorbatchev.com/SyntaxHighlighter/manual/installation.html)
     [config](http://alexgorbatchev.com/SyntaxHighlighter/manual/configuration/)
