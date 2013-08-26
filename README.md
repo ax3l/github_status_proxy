@@ -26,7 +26,7 @@ Prepare:
   ```bash
   curl -i -u :user -d \
     '{"name": "web", "active": true, "events": ["push", "pull_request"], \
-      "config": {"url": ":url", "content_type": "form"}}' \
+      "config": {"url": "https://github:aSecretToAuthGitHub@url.net", "content_type": "form"}}' \
     https://api.github.com/repos/:user/:repo/hooks
   ```
 
