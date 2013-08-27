@@ -177,7 +177,7 @@ else
 
             // Update time difference format
             $thisLastupDiff = $thisLastup->diff( new DateTime("now") );
-            if( $thisLastupDiff->format('%i') > 0 )
+            if( $thisLastupDiff->format('%i') >= 0 )
                 $thisLastupDiffFormat = "%i minutes";
             if( $thisLastupDiff->format('%h') > 0 )
                 $thisLastupDiffFormat = "%h hours";
