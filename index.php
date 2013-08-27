@@ -165,6 +165,7 @@ else
             $thisId = $thisEntries[0]['id'];
             $thisEtype = $thisEntries[0]['etype'];
             $thisEstatus = $thisEntries[0]['estatus'];
+            $thisLastup = new DateTime($thisEntries[0]['lastup']);
             $thisSHA = $thisEntries[0]['sha'];
             $thisRepo = $thisEntries[0]['repo'];
             $thisOwner = $thisEntries[0]['owner'];
@@ -174,9 +175,20 @@ else
             $thisResult = $thisEntries[0]['result'];
             $thisOutput = $thisEntries[0]['output'];
 
+            // Update time difference format
+            $thisLastupDiff = $thisLastup->diff( new DateTime("now") );
+            if( $thisLastupDiff->format('%i') > 0 )
+                $thisLastupDiffFormat = "%i minutes";
+            if( $thisLastupDiff->format('%h') > 0 )
+                $thisLastupDiffFormat = "%h hours";
+            if( $thisLastupDiff->format('%a') > 0 )
+                $thisLastupDiffFormat = "%a days";
+
+            // Data Table
             echo "<table><caption>Results for <em>" . $thisEtype . "</em> " . $thisOwner . "/" . $thisRepo . "@" . mb_substr($thisSHA, 0, 7);
             if( $thisEtype == "pull" )
                 echo " -> " . $thisOwner_b . "/" . $thisRepo_b . "@" . mb_substr($thisSHA_b, 0, 7);
+            echo "<br />Last status update: <em>" . ( $thisLastupDiff->format($thisLastupDiffFormat) ) . " ago</em>";
             echo "</caption>";
             echo "<thead><tr><th>test client</th><th>result</th><th>output</th></tr></thead>";
             echo "<tbody>";
