@@ -66,6 +66,9 @@ class config
     const dbTimeout = 3000;
 
     // Allowed IP Range for GitHub POST origins
+    // check if they are still up-to-date with:
+    //    curl -i https://api.github.com/meta
+    // -> "hooks" section
     public static $github_iprange = array(
      array( 'ip' => "204.232.175.64", 'mask' => "27"),
      array( 'ip' => "192.30.252.0",   'mask' => "22") );
