@@ -175,6 +175,11 @@ else
             $thisResult = $thisEntries[0]['result'];
             $thisOutput = $thisEntries[0]['output'];
 
+            //$mvcEvent->setStatus( $db, $thisEntries[0]['id'], eventStatus::received );
+            //$ghParser = new connectGitHub( );
+            //$ghParser->setStatus( $db, $thisEntries[0]['id'], ghStatus::pending,
+            //                      "received by status proxy" );
+
             // Update time difference format
             $thisLastupDiff = $thisLastup->diff( new DateTime("now") );
             if( $thisLastupDiff->format('%i') >= 0 )

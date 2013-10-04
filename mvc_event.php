@@ -185,18 +185,17 @@ class mvc_event extends mvc
         $mvcTest = new mvc_test();
         $mvcTest->getName();
 
-        $queryTpl = "SELECT *, %s.id as %s_id" .
+        $queryTpl = "SELECT %s.*, t.lastup as t_lastup," .
+                    " t.eventid, t.client, t.result, t.output" .
                     " FROM `%s`" .
-                    " LEFT JOIN `%s`" .
-                    " ON %s.id=%s.eventid" .
+                    " LEFT JOIN `%s` t" .
+                    " ON %s.id=t.eventid" .
                     " WHERE key='%s';";
         $query = sprintf( $queryTpl,
-                          $mvcTest->getName(),
-                          $mvcTest->getName(),
+                          $this->getName(),
                           $this->getName(),
                           $mvcTest->getName(),
                           $this->getName(),
-                          $mvcTest->getName(),
                           SQLite3::escapeString( $key )
                         );
 
