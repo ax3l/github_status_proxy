@@ -67,7 +67,7 @@ class mvc_event extends mvc
         //   http://developer.github.com/v3/repos/hooks/#create-a-hook
         //   http://developer.github.com/v3/activity/events/types/#pullrequestevent
         $dec = json_decode( $payload );
-        
+
         $eventType = ghType::commit;
         if( isset( $dec->pull_request) )
             $eventType = ghType::pull;
@@ -185,13 +185,16 @@ class mvc_event extends mvc
         $mvcTest = new mvc_test();
         $mvcTest->getName();
 
-        $queryTpl = "SELECT %s.*, t.lastup as t_lastup," .
+        $queryTpl = "SELECT %s.*," .
+                    " datetime(%s.lastup, 'localtime') as lastup," .
+                    " datetime(t.lastup, 'localtime') as t_lastup," .
                     " t.eventid, t.client, t.result, t.output" .
                     " FROM `%s`" .
                     " LEFT JOIN `%s` t" .
                     " ON %s.id=t.eventid" .
                     " WHERE key='%s';";
         $query = sprintf( $queryTpl,
+                          $this->getName(),
                           $this->getName(),
                           $this->getName(),
                           $mvcTest->getName(),

@@ -92,6 +92,11 @@ elseif( $client['isClient'] )
         $payload = substr( $payload, 0, config::maxlen );
 
     $dec = json_decode( $payload );
+    if( $dec === NULL )
+    {
+        error_log("Malformed JSON payload (first 1000 chars): " . substr( $payload, 0, 1000 ) );
+    }
+
     if( $dec->action == clientReport::request )
     {
         // payload={"action":"request"}
@@ -193,6 +198,7 @@ else
             echo "<table><caption>Results for <em>" . $thisEtype . "</em> " . $thisOwner . "/" . $thisRepo . "@" . mb_substr($thisSHA, 0, 7);
             if( $thisEtype == "pull" )
                 echo " -> " . $thisOwner_b . "/" . $thisRepo_b . "@" . mb_substr($thisSHA_b, 0, 7);
+            echo "<br />Proxy event state: <em>" . $thisEstatus . "</em>";
             echo "<br />Last status update: <em>" . ( $thisLastupDiff->format($thisLastupDiffFormat) ) . " ago</em>";
             echo "</caption>";
             echo "<thead><tr><th>test client</th><th>result</th><th>output</th></tr></thead>";
@@ -205,6 +211,8 @@ else
                 $thisOutput = trim( htmlentities( $thisTest['output'] , ENT_COMPAT, 'UTF-8' ) );
                 // remove emails: <*@*>
                 $thisOutput = preg_replace( "/\&lt\;.*@.*\&gt\;/", "" , $thisOutput );
+                // convert to real newlines
+                $thisOutput = trim (str_replace( '\n', "\n", $thisOutput ) );
                 echo '<td><pre>' . $thisOutput . '</pre></td>';
                 echo '</tr>';
             }
