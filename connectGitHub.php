@@ -32,7 +32,7 @@ class connectGitHub
     {
         // ...
     }
-    
+
     /** set status in GitHub
      *
      * - http://developer.github.com/v3/repos/statuses/
@@ -48,10 +48,14 @@ class connectGitHub
      */
     function setStatus( &$db, $dbId, $status, $postDesc = NULL )
     {
+        if( config::debug )
+            error_log("GitHub Status Proxy: writing status `" .
+                      $status . "` for id = `" . $dbId . "`");
+
         /** get event */
         $mvcEvent = new mvc_event();
         $evEntry = $mvcEvent->getById( $db, $dbId );
-        
+
         /** description */
         $description = "Test status - " . $status;
         if( isset( $postDesc ) )
@@ -72,34 +76,43 @@ class connectGitHub
         /** JSON params */
         $url = config::api . "/repos/" .
                $owner . "/" . $repo .
-               "/statuses/" .       
+               "/statuses/" .
                $evEntry['sha'];
         $data = '{"state": "' . $status . '", ' .
                 ' "target_url": "' . config::url . '?status=' . $evEntry['key'] . '", ' .
                 ' "description": "' . $description . '"}';
-        
+
         /** send to GitHub */
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_USERAGENT, "GitHub Status Proxy");
         curl_setopt($ch, CURLOPT_HTTPHEADER, array( "Authorization: token " . config::access_token ) );
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, TRUE);
         // mozilla CA bundle from
         //   http://curl.haxx.se/docs/caextract.html
-        curl_setopt ($ch, CURLOPT_CAINFO, "cacert.pem");
-        
+        curl_setopt($ch, CURLOPT_CAINFO, "cacert.pem");
+
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-         
+
         $response = curl_exec($ch);
+        $returnCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        if( !$response || $returnCode != 201 )
+            error_log("GitHub Status Proxy: (" .
+                      $returnCode . ") " .
+                      $response . " - " . curl_error($ch) );
+
         if( config::debug )
         {
             curl_error($ch);
             echo "\n";
             curl_getinfo($ch, CURLINFO_SSL_VERIFYRESULT);
             echo "\n";
-            curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            echo $returnCode;
             // expected response: "Status: 201 Created"
             echo "\n";
             //echo $response;
