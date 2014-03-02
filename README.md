@@ -10,6 +10,12 @@ This collection of scripts is used to work as a **receiver** for
 It stores the received events in a *round-robin* sqlite3 database.
 
 
+Code Control
+------------
+
+[![Scrutinizer Quality Score](https://scrutinizer-ci.com/g/ax3l/github_status_proxy/badges/quality-score.png?s=a99c6c4e096a58070e0d6b4eb07f1af117b60972)](https://scrutinizer-ci.com/g/ax3l/github_status_proxy/)
+
+
 Install
 -------
 
