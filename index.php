@@ -52,6 +52,9 @@ foreach( config::$client_secret as $key => $value )
     }
 }
 
+//$ghParser1 = new connectGitHub( );
+//$ghParser1->setStatus( $db, 179, ghStatus::success, "ok :)" );
+
 /** Parse Request *************************************************************
  */
 if( $isGitHub )

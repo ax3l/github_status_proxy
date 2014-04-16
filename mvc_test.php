@@ -49,7 +49,8 @@ class mvc_test extends mvc
                           SQLite3::escapeString( $result ),
                           SQLite3::escapeString( $output )
                         );
-        $newID = $db->insert( $query );
+        //$newID =
+        $db->insert( $query );
 
         // update event status
         $mvcEvent = new mvc_event();
