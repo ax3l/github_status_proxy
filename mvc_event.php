@@ -130,7 +130,7 @@ class mvc_event extends mvc
         foreach( config::$github_team as $value )
         {
             $authorizedForScheduling = ( $authorizedForScheduling ||
-                $ghParser->isUserInTeam( $own, $value['id'] );
+                $ghParser->isUserInTeam( $own, $value['id'] ) );
         }
 
         if( $authorizedForScheduling )
