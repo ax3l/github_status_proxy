@@ -1,6 +1,6 @@
 <?php
 
-/** Copyright 2013 Axel Huebl
+/** Copyright 2013-2014 Axel Huebl
  *
  *  This file is part of github_status_proxy.
  *
@@ -27,7 +27,7 @@ class mvc_event extends mvc
 {
     /** table name */
     protected $name = "event";
-    
+
     /** Columns
      *
      *  @todo Actually, one should de-clutter this table to contain only
@@ -116,16 +116,46 @@ class mvc_event extends mvc
         }
         else
         {
-            echo "Unknown event";
+            error_log("GitHub Status Proxy: Received unknown event");
             return;
         }
-        
+
+        /** check if user that caused the commit/pull is in one of the teams,
+         *  authorized  to scheduler test runs */
+        $authorizedForScheduling = false;
+        $newEventState = eventStatus::analysed;
+        $newGhStatus = ghStatus::error;
+        $newGHStatusText = "Comitter not in authorized team(s)";
+
+        foreach( config::$github_team as $value )
+        {
+            $authorizedForScheduling = ( $authorizedForScheduling ||
+                $ghParser->isUserInTeam( $own, $value['id'] );
+        }
+
+        if( $authorizedForScheduling )
+        {
+            $newEventState = eventStatus::received;
+            $newGhStatus = ghStatus::pending;
+            $newGHStatusText = "received by status proxy";
+
+            if( config::debug )
+                error_log("GitHub Status Proxy: User `" .
+                          $own . "` found in authorized team(s) for scheduling");
+        }
+        else
+        {
+            error_log("GitHub Status Proxy: User `" .
+                      $own . "` NOT found in authorized team(s) for scheduling");
+        }
+
+        /** add to event data base */
         $mvcEvent = new mvc_event();
 
         $query = sprintf( $mvcEvent->getInsertSQL(),
                           SQLite3::escapeString( crypt( config::statusSalt . rand() . $payload ) ),
                           SQLite3::escapeString( $eventType ),
-                          SQLite3::escapeString( eventStatus::received ),
+                          SQLite3::escapeString( $newEventState ),
                           SQLite3::escapeString( $sha ),
                           SQLite3::escapeString( $sha_b ),
                           SQLite3::escapeString( $own ),
@@ -142,9 +172,9 @@ class mvc_event extends mvc
                         );
         $newID = $db->insert( $query );
 
-        // trigger github pending status
-        $ghParser->setStatus( $db, $newID, ghStatus::pending,
-                              "received by status proxy" );
+        // trigger github pending (or error for unauthorized commit) status
+        $ghParser->setStatus( $db, $newID, $newGhStatus,
+                              $newGHStatusText );
 
         /// @todo insert to `test` table as "has to be tested" for each test client
         /// ...

@@ -39,7 +39,7 @@ Prepare:
 - create a tooken for the `config.php` -> `access_token`:
   ```bash
   curl -i -u :user -d \
-    '{"scopes": ["repo:status"], "note": ["GitHub Proxy"], "note_url": ["yourUrl"]}' \
+    '{"scopes": ["repo:status","read:org"], "note": ["GitHub Proxy"], "note_url": ["yourUrl"]}' \
     https://api.github.com/authorizations
   ```
 

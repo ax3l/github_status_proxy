@@ -1,5 +1,5 @@
 <?php
-/** Copyright 2013 Axel Huebl
+/** Copyright 2013-2014 Axel Huebl
  *
  *  This file is part of github_status_proxy.
  *
@@ -31,6 +31,81 @@ class connectGitHub
     function __destruct()
     {
         // ...
+    }
+
+    /** check if a user is in a certain Team
+     *
+     * - https://developer.github.com/v3/orgs/teams/#get-team-member
+     *     response: "Status: 204 No Content" -> is a member
+     *               "Status: 404 Not Found"  -> is NOT a member OR
+     *                                           scope read:org missing
+     *
+     * \return true (is in the team) or false (is NOT in the team)
+     */
+    function isUserInTeam( $username, $teamid )
+    {
+        if( config::debug )
+            error_log("GitHub Status Proxy: is user `" .
+                      $username . "` in team with id = `" . $teamid . "`");
+
+        $url = config::api . "/teams/" .
+               $teamid .
+               "/members/" .
+               $username;
+
+        /** send to GitHub */
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_USERAGENT, "GitHub Status Proxy");
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array( "Authorization: token " . config::access_token ) );
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, TRUE);
+        // mozilla CA bundle from
+        //   http://curl.haxx.se/docs/caextract.html
+        curl_setopt($ch, CURLOPT_CAINFO, "cacert.pem");
+
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($ch);
+        $returnCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        if( config::debug )
+        {
+            curl_error($ch);
+            echo "\n";
+            curl_getinfo($ch, CURLINFO_SSL_VERIFYRESULT);
+            echo "\n";
+            echo $returnCode;
+            // expected response: "Status: 202 No Content" OR
+            //                    "Status: 404 Not Found"
+            echo "\n";
+            //echo $response;
+        }
+        curl_close($ch);
+
+        /** return state */
+        if( $returnCode == 204 )
+        {
+            if( config::debug )
+                error_log("GitHub Status Proxy:  `" .
+                          $username . "` found in team with id = `" .
+                          $teamid . "` (Status: " .
+                          $returnCode . ") " .
+                          $response . " - " . curl_error($ch) );
+            return true;
+        }
+        else
+        {
+            if( config::debug )
+                error_log("GitHub Status Proxy:  `" .
+                          $username . "` NOT found in team with id = `" .
+                          $teamid . "` (Status: " .
+                          $returnCode . ") " .
+                          $response . " - " . curl_error($ch) );
+            return false;
+        }
     }
 
     /** set status in GitHub

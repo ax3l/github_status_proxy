@@ -33,7 +33,7 @@ class config
     //   the token needs at least repo:status privileges
     //   create it with:
     //     curl -i -u <userName> -d
-    //     '{"scopes": ["repo:status"], "note": ["GitHub Proxy"],
+    //     '{"scopes": ["repo:status","read:org"], "note": ["GitHub Proxy"],
     //     "note_url": ["yourUrl"]}' https://api.github.com/authorizations
     const access_token = "...";
 
@@ -43,6 +43,16 @@ class config
     //    https://github_username:github_password@url.net/yourPath
     const github_username = "github";
     const github_password = "...";
+
+    // GitHub Team Whitelist
+    //   members of teams that are allowed to get scheduled
+    //   to the test client (one has to match at least one team)
+    //   https://developer.github.com/v3/orgs/teams
+    //   get team id with:
+    //     curl -i -H "Authorization: token ..." https://api.github.com/orgs/:org/teams
+    public static $github_team = array(
+     array( 'id' => "...", 'note' => "Maintainer"),
+     array( 'id' => "...", 'note' => "Developer" ) );
 
     // Client secret (one secret per test client)
     //   clients must auth theirselves with a POST variable "client" using the
@@ -70,7 +80,6 @@ class config
     //    curl -i https://api.github.com/meta
     // -> "hooks" section
     public static $github_iprange = array(
-     array( 'ip' => "204.232.175.64", 'mask' => "27"),
      array( 'ip' => "192.30.252.0",   'mask' => "22") );
 
     // Salt for unauthorized user requests

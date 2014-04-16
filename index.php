@@ -1,6 +1,6 @@
 <?php
 
-/** Copyright 2013 Axel Huebl
+/** Copyright 2013-2014 Axel Huebl
  *
  *  This file is part of github_status_proxy.
  *
@@ -60,12 +60,12 @@ if( $isGitHub )
         echo "Hello GitHub!\n";
 
     $ghParser = new connectGitHub( );
-    
+
     // validate and prepare payload
     $payload = $_POST['payload'];
     if( config::maxlen > 0 )
         $payload = substr( $payload, 0, config::maxlen );
-    
+
     $mvcEvent = new mvc_event();
     $mvcEvent->add( $db, $ghParser, $payload );
 }
