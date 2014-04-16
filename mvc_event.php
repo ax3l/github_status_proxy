@@ -72,9 +72,6 @@ class mvc_event extends mvc
         if( isset( $dec->pull_request) )
             $eventType = ghType::pull;
 
-        $url = ""; $git = ""; $own = ""; $rep = ""; $sha = ""; $bra = "";
-        $url_b = ""; $git_b = ""; $own_b = ""; $rep_b = ""; $sha_b = ""; $bra_b = "";
-
         if( $eventType == ghType::commit )
         {
             $url = $dec->repository->url;
