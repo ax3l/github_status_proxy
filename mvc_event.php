@@ -113,7 +113,7 @@ class mvc_event extends mvc
         }
         else
         {
-            error_log("GitHub Status Proxy: Received unknown event");
+            debugLog("Received unknown event", true);
             return;
         }
 
@@ -136,14 +136,14 @@ class mvc_event extends mvc
             $newGhStatus = ghStatus::pending;
             $newGHStatusText = "received by status proxy";
 
-            if( config::debug )
-                error_log("GitHub Status Proxy: User `" .
-                          $own . "` found in authorized team(s) for scheduling");
+            debugLog("User `" .
+                     $own . "` found in authorized team(s) for scheduling");
         }
         else
         {
-            error_log("GitHub Status Proxy: User `" .
-                      $own . "` NOT found in authorized team(s) for scheduling");
+            debugLog("User `" .
+                     $own . "` NOT found in authorized team(s) for scheduling",
+                     true);
         }
 
         /** add to event data base */

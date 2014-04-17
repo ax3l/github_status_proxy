@@ -44,9 +44,8 @@ class connectGitHub
      */
     function isUserInTeam( $username, $teamid )
     {
-        if( config::debug )
-            error_log("GitHub Status Proxy: is user `" .
-                      $username . "` in team with id = `" . $teamid . "`");
+        debugLog("is user `" .
+                 $username . "` in team with id = `" . $teamid . "`");
 
         $url = config::api . "/teams/" .
                $teamid .
@@ -86,30 +85,29 @@ class connectGitHub
         /** return state */
         if( $returnCode == 204 )
         {
-            if( config::debug )
-                error_log("GitHub Status Proxy:  `" .
-                          $username . "` found in team with id = `" .
-                          $teamid . "` (Status: " .
-                          $returnCode . ") ");
+            debugLog("`" .
+                     $username . "` found in team with id = `" .
+                     $teamid . "` (Status: " .
+                     $returnCode . ") ");
             return true;
         }
         elseif( $returnCode == 404 )
         {
-            if( config::debug )
-                error_log("GitHub Status Proxy:  `" .
-                          $username . "` NOT found in team with id = `" .
-                          $teamid . "` (Status: " .
-                          $returnCode . ") " .
-                          $response . " - " . curl_error($ch) );
+            debugLog("`" .
+                     $username . "` NOT found in team with id = `" .
+                     $teamid . "` (Status: " .
+                     $returnCode . ") " .
+                     $response . " - " . curl_error($ch) );
             return false;
         }
         else
         {
-            error_log("GitHub Status Proxy:  `" .
-                      $username . "` request for team with id = `" .
-                      $teamid . "` failed (Status: " .
-                      $returnCode . ") " .
-                      $response . " - " . curl_error($ch) );
+            debugLog("`" .
+                     $username . "` request for team with id = `" .
+                     $teamid . "` failed (Status: " .
+                     $returnCode . ") " .
+                     $response . " - " . curl_error($ch),
+                     true );
         }
         curl_close($ch);
     }
@@ -129,9 +127,8 @@ class connectGitHub
      */
     function setStatus( &$db, $dbId, $status, $postDesc = NULL )
     {
-        if( config::debug )
-            error_log("GitHub Status Proxy: writing status `" .
-                      $status . "` for id = `" . $dbId . "`");
+        debugLog("writing status `" .
+                 $status . "` for id = `" . $dbId . "`");
 
         /** get event */
         $mvcEvent = new mvc_event();
@@ -183,9 +180,10 @@ class connectGitHub
         $returnCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
         if( !$response || $returnCode != 201 )
-            error_log("GitHub Status Proxy: (" .
-                      $returnCode . ") " .
-                      $response . " - " . curl_error($ch) );
+            debugLog("(" .
+                     $returnCode . ") " .
+                     $response . " - " . curl_error($ch),
+                     true );
 
         if( config::debug )
         {
