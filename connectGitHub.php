@@ -55,7 +55,6 @@ class connectGitHub
 
         /** send to GitHub */
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         curl_setopt($ch, CURLOPT_USERAGENT, "GitHub Status Proxy");
@@ -83,7 +82,6 @@ class connectGitHub
             echo "\n";
             //echo $response;
         }
-        curl_close($ch);
 
         /** return state */
         if( $returnCode == 204 )
@@ -92,11 +90,10 @@ class connectGitHub
                 error_log("GitHub Status Proxy:  `" .
                           $username . "` found in team with id = `" .
                           $teamid . "` (Status: " .
-                          $returnCode . ") " .
-                          $response . " - " . curl_error($ch) );
+                          $returnCode . ") ");
             return true;
         }
-        else
+        elseif( $returnCode == 404 )
         {
             if( config::debug )
                 error_log("GitHub Status Proxy:  `" .
@@ -106,6 +103,15 @@ class connectGitHub
                           $response . " - " . curl_error($ch) );
             return false;
         }
+        else
+        {
+            error_log("GitHub Status Proxy:  `" .
+                      $username . "` request for team with id = `" .
+                      $teamid . "` failed (Status: " .
+                      $returnCode . ") " .
+                      $response . " - " . curl_error($ch) );
+        }
+        curl_close($ch);
     }
 
     /** set status in GitHub
