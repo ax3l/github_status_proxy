@@ -30,7 +30,7 @@ if( config::debug == TRUE )
  * \param $message as string
  * \param $always  log the message even if \see config::debug is FALSE
  */
-function debugLog( string $message, boolean $always = false )
+function debugLog( $message, $always = false )
 {
     if( $always || config::debug )
         error_log( "GitHub Status Proxy: " . $message );
