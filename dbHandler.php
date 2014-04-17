@@ -31,7 +31,7 @@ class dbHandler
 {
     function __construct( $mvc_objects )
     {
-        $this->dbName = config::dbName;
+        $this->dbName = (string)config::dbName;
 
         if( ! class_exists('SQLite3') ) die( "Missing SQLite3 support!" );
         $this->sql = new SQLite3( $this->dbName );
@@ -45,24 +45,24 @@ class dbHandler
         {
             if( config::debug )
                 echo "Looking for table \"" . $table->getName() . "\"\n";
-            
+
             $table_ex = "SELECT name FROM sqlite_master WHERE type='table' AND name='" . $table->getName() . "'";
             $result = $this->sql->query( $table_ex );
-            
+
             if( ! $result )
                 die( "Database Owner does not match web server user!" );
-            
+
             // create missing table
             if( $result->fetchArray() == NULL )
             {
                 if( config::debug )
                     echo "create table \"" . $table->getName() . "\"\n";
-                
+
                 //$this->sql->exec( "PRAGMA foreign_keys = ON;" );
 
                 // SQLite 3.3+ : CREATE TABLE if not exists
                 $cst = "CREATE TABLE " . $table->getName() . " (";
-                
+
                 $i=0;
                 foreach( $table->getColumns() as $col )
                 {
@@ -71,7 +71,7 @@ class dbHandler
                     $cst .= $col['name'] . " " . $col['type'] . " " . $col['prop'];
                 }
                 $cst .= ");";
-                
+
                 if( config::debug )
                     echo $cst;
                 $this->sql->exec( $cst );
@@ -89,12 +89,12 @@ class dbHandler
         $this->sql->close();
         unset($this->sql);
     }
-    
+
     function exec( $cmd )
     {
         return $this->sql->exec( $cmd );
     }
-    
+
     function insert( $cmd )
     {
         $this->exec( $cmd );
@@ -105,7 +105,7 @@ class dbHandler
     {
         return $this->sql->query( $query );
     }
-    
+
     private $dbName;
     public $sql;
 
