@@ -81,23 +81,28 @@ elseif( $client['isClient'] )
     $payload = "";
     // Receive request payload
     if( isset( $_POST['payload'] ) )
-        $payload = $_POST['payload'];
+        $payload = urldecode($_POST['payload']);
     elseif( isset( $_GET['payload'] ) )
         $payload = $_GET['payload'];
     else
     {
-        if( config::debug )
-            echo "No payload specified\n";
+        debugLog( "Client has no payload specified",
+                  true );
     }
 
     // get new work or report a finished test?
+    $payloadOrgLen = strlen( $payload );
     if( config::maxlen > 0 )
         $payload = substr( $payload, 0, config::maxlen );
 
     $dec = json_decode( $payload );
-    if( $dec === NULL )
+    if( $dec === NULL || json_last_error() != JSON_ERROR_NONE )
     {
-        error_log("Malformed JSON payload (first 1000 chars): " . substr( $payload, 0, 1000 ) );
+        debugLog( "Malformed JSON payload (first 2000 characters, " .
+                  $payloadOrgLen . " received as " .
+                  $_SERVER["CONTENT_TYPE"] . "): " .
+                  substr( $payload, 0, 2000 ),
+                  true );
     }
 
     if( $dec->action == clientReport::request )
