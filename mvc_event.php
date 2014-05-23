@@ -36,6 +36,7 @@ class mvc_event extends mvc
      *        - received
      *        - payload
      *  and store commits and pulls in separate tables.
+     * @todo the "owner" we store is actually the committer -> rename the db field
      */
     protected $columns = array(
       array( 'name' => "id", 'type' => "INTEGER", 'prop' => "PRIMARY KEY AUTOINCREMENT", 'format' => "%d", 'default' => TRUE),
@@ -76,7 +77,7 @@ class mvc_event extends mvc
         {
             $url = $dec->repository->url;
             $bra = preg_split('/\//', $dec->ref)[2];
-            $own = $dec->repository->owner->name;
+            $own = $dec->head_commit->committer->name;
             $rep = $dec->repository->name;
             $git = "git://github.com/" . $own . "/" . $rep . ".git";
             $sha = substr( $dec->after, 0, 40 );
@@ -99,7 +100,7 @@ class mvc_event extends mvc
             $url = $dec->pull_request->head->repo->html_url;
             $bra = $dec->pull_request->head->ref;
             $git = $dec->pull_request->head->repo->clone_url;
-            $own = $dec->pull_request->head->repo->owner->login;
+            $own = $dec->pull_request->user->login;
             $rep = $dec->pull_request->head->repo->name;
             $sha = substr( $dec->pull_request->head->sha, 0, 40 );
 
