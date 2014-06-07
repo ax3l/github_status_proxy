@@ -205,7 +205,7 @@ else
             echo "<table><caption>Results for <em>" . $thisEtype . "</em> " . $thisOwner . "/" . $thisRepo . "@" . mb_substr($thisSHA, 0, 7);
             if( $thisEtype == "pull" )
                 echo " -> " . $thisOwner_b . "/" . $thisRepo_b . "@" . mb_substr($thisSHA_b, 0, 7);
-            echo "<br />Proxy event state: <em>" . $thisEstatus . "</em>";
+            echo "<br />Proxy event state: <em>" . $thisEstatus . "</em> (" . $thisId . ")";
             echo "<br />Last status update: <em>" . ( $thisLastupDiff->format($thisLastupDiffFormat) ) . " ago</em>";
             echo "</caption>";
             echo "<thead><tr><th>test client</th><th>result</th><th>output</th></tr></thead>";
