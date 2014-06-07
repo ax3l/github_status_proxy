@@ -79,7 +79,8 @@ class mvc_event extends mvc
             $bra = preg_split('/\//', $dec->ref)[2];
             $own = $dec->head_commit->committer->username;
             $rep = $dec->repository->name;
-            $git = "git://github.com/" . $own . "/" . $rep . ".git";
+            // anonymous https link for public repos
+            $git = $dec->repository->url . ".git";
             $sha = substr( $dec->after, 0, 40 );
 
             $url_b = $url;
