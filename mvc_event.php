@@ -92,9 +92,10 @@ class mvc_event extends mvc
         }
         elseif( $eventType == ghType::pull )
         {
-            // http://developer.github.com/v3/activity/events/types/#pullrequestevent
-            //   opened, closed, synchronize or reopened
-            if( $dec->action == "closed" )
+            // https://developer.github.com/v3/activity/events/types/#pullrequestevent
+            //   "assigned", "unassigned", "labeled", "unlabeled", "opened", "closed",
+            //   "reopened" or "synchronize"
+            if( $dec->action != "opened" && $dec->action != "reopened" && $dec->action != "synchronize" )
                 return;
 
             // head of the branch of the forked repo to merge from
