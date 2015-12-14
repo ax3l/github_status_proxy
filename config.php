@@ -96,7 +96,7 @@ class config
 
     // maximum length of the payload / test client output in chars
     // 0 means: no limit
-    const maxlen = 1000000;
+    const maxlen = 10000000;
 
     // url of this proxy
     const url = "...";
