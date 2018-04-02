@@ -23,6 +23,7 @@ Requires
 - PHP 5.4.0+
 - `php-sqlite3` (SQLite3)
 - `php-curl`
+- `php-mbstring`
 
 Recommented
 - `sqlite3`
