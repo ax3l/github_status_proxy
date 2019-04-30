@@ -80,7 +80,9 @@ class config
     //    curl -i https://api.github.com/meta
     // -> "hooks" section
     public static $github_iprange = array(
-     array( 'ip' => "192.30.252.0",   'mask' => "22") );
+     array( 'ip' => "192.30.252.0",   'mask' => "22"),
+     array( 'ip' => "185.199.108.0",  'mask' => "22"),
+     array( 'ip' => "140.82.112.0",   'mask' => "20") );
 
     // Salt for unauthorized user requests
     const statusSalt = "...";
